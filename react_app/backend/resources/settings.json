@@ -1,0 +1,7 @@
+{
+    "mqtt": {
+        "host": "hub.retemet.com",
+        "port": 1883,
+        "topic": "ws/multedo"
+    }
+}
