@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import TemperatureDisplay from './components/TemperatureDisplay'
+import TemperatureDisplay from './components/temperature/TemperatureDisplay'
 
 function App() {
 
@@ -11,7 +11,7 @@ function App() {
   useEffect(() => {
     window.electronAPI.GetMqttData((data) => {
       if (data.temp !== undefined) {
-        setTemp(data.temp)
+        setTemp(data.temp);
       }
     })
   }, [])
