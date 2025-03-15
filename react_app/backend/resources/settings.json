@@ -1,7 +1,7 @@
 {
     "mqtt": {
-        "host": "hub.retemet.com",
+        "host": "test.mosquitto.org",
         "port": 1883,
-        "topic": "ws/multedo"
+        "topic": "TX000AA"
     }
 }

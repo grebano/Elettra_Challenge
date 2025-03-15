@@ -7,19 +7,7 @@ if (!client) {
   client = mqtt.connect(`mqtt://${settings.mqtt.host}`);
 
   client.subscribe(`${settings.mqtt.topic}`, () => {
-    console.log(`Subscribed to topic ws/multedo`);
-  });
-
-  client.on('error', (err) => {
-    console.error('Connection failed:', err);
-  });
-
-  client.on('close', () => {
-    console.log('Connection to MQTT broker closed');
-  });
-
-  client.on('offline', () => {
-    console.log('Client is offline');
+    console.log(`Subscribed to topic ${settings.mqtt.topic}`);
   });
 }
 
