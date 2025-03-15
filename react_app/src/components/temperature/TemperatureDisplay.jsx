@@ -3,11 +3,11 @@ import './TemperatureDisplay.css';
 
 const TemperatureDisplay = ({ temperature, unit = '°C' }) => {
     return (
-        <div className="container">
+        <div>
             <h2 className="temperature">
                 {temperature === null ? '--' : temperature}{unit}
             </h2>
-            <p className="label">Current Temperature</p>
+            <p className="temp-label">Current Temperature</p>
         </div>
     );
 };

@@ -21,15 +21,15 @@ app.whenReady().then(() => {
     },
   });
 
-  if (false && process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV === "development") {
     mainWindow.loadURL("http://localhost:5173");
   } else {
     mainWindow.loadFile(path.join(__dirname, "build", "index.html"));
   }
 
   //mqttCallback(mainWindow.webContents.send, "mqtt-data-request");
-  mqttCallback((mqttString) =>
-    mainWindow.webContents.send("mqtt-data-request", mqttString)
+  mqttCallback((mqttData) =>
+    mainWindow.webContents.send("mqtt-data-request", mqttData)
   );
 
   mainWindow.on("closed", () => {

@@ -1,18 +1,10 @@
-.container {
-    text-align: center;
-    padding: 20px;
-    background-color: #f0f0f0;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
 .temperature {
     font-size: 48px;
     margin: 0;
     color: #333;
 }
 
-label {
+.temp-label {
     font-size: 16px;
     color: #666;
 }
