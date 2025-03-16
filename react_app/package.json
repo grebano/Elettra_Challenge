@@ -13,11 +13,10 @@
     "appId": "com.example.myapp",
     "productName": "MyElectronApp",
     "files": [
-      "dist/**/*",
-      "main.js",
-      "preload.js",
+      "build/**/*",
       "backend/**/*",
-      "build/**/*"
+      "preload.js",
+      "main.js"
     ],
     "win": {
       "target": "nsis",
