@@ -5,6 +5,7 @@ import './App.css'
 import TemperatureDisplay from './components/temperature/TemperatureDisplay'
 import Charts from './components/charts/Charts'
 import Indicators from './components/status/Indicators' 
+import { set } from 'date-fns'
 
 function App() {
 
@@ -19,19 +20,22 @@ function App() {
 
   useEffect(() => {
     window.electronAPI.GetMqttData((data) => {
-      // Update the temperature state
-      if (data.temperature !== undefined) {
-        setTemp(data.temperature);
-        setTempSeries((prev) => [...prev, { x: new Date(), y: data.temperature }]);
-      }
-
-      //Update indicator states
       if (!data.data_stopped && !data.error) {
+        setDataStopped(false);
+
         setDataReceived(true);
         setTimeout(() => setDataReceived(false), 250);
+
+        // Update the temperature state
+        if (data.temperature !== undefined) {
+          setTemp(data.temperature);
+          setTempSeries((prev) => [...prev, { x: new Date(), y: data.temperature }]);
+        }
+      } else if (data.data_stopped) {
+        setDataStopped(true);
+      } else if (data.error) {
+        setDataError(true);
       }
-      setDataStopped(data.data_stopped);
-      setDataError(data.error);
     })
   }, [])
 

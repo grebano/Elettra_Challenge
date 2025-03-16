@@ -57,14 +57,14 @@ const Charts = ({ data }) => {
         type: "time",
         time: {
           unit: "second",
-          tooltipFormat: "mm:ss",
+          tooltipFormat: "HH:mm:ss",
           displayFormats: {
-            second: "mm:ss",
+            second: "HH:mm:ss",
           },
         },
         title: {
           display: true,
-          text: "Time (mm:ss)",
+          text: "Time (hh:mm:ss)",
         },
       },
     },
