@@ -30,7 +30,13 @@
   margin: 20px 0;
   width: 75%;
   margin: 0 auto;
-  padding: 3em;
+}
+
+/* Map container */
+.map-container {
+  margin: 0 auto;
+  width: 75%;
+  height: 100vh;
 }
 
 /* Indicators container */
