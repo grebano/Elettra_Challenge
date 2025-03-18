@@ -27,6 +27,7 @@ PubSubClient client(ethClient);
 // Function prototypes
 void callback(char *topic, byte *payload, unsigned int length);
 void reconnect();
+float randomFloat(float min, float max);
 
 void setup()
 {
@@ -83,6 +84,8 @@ void loop()
   jsonDoc["device"] = "ESP32-S3-Ethernet";
   jsonDoc["temperature"] = 25.5;
   jsonDoc["humidity"] = 60.3;
+  jsonDoc["lat"] = randomFloat(43.0, 44.5);
+  jsonDoc["lon"] = randomFloat(7.5, 10.5);
 
   // Convert JSON to string
   char jsonBuffer[200];
@@ -127,4 +130,9 @@ void reconnect()
       delay(5000);
     }
   }
+}
+
+float randomFloat(float min, float max)
+{
+  return min + (max - min) * (float)random(0, 1000000) / 999999.0;
 }
