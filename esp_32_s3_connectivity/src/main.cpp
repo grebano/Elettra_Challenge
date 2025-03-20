@@ -83,7 +83,11 @@ void loop()
   // Create JSON data
   jsonDoc["device"] = "ESP32-S3-Ethernet";
   jsonDoc["temperature"] = 25.5;
-  jsonDoc["humidity"] = 60.3;
+  jsonDoc["battery_voltage"] = 3.7;
+  jsonDoc["battery_percentage"] = 75;
+  jsonDoc["inverter_temperature"] = 30.0;
+  jsonDoc["energy_torque"] = 100.0;
+  jsonDoc["motor_current"] = 50.0;
   jsonDoc["lat"] = randomFloat(43.0, 44.5);
   jsonDoc["lon"] = randomFloat(7.5, 10.5);
 
