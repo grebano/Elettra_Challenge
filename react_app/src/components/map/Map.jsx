@@ -25,38 +25,59 @@ const PanToLastMarker = ({ lastMarker }) => {
 };
 
 const Map = ({ lastMarker, fixedMarkers }) => {
-  // State to store the markers
+  // State per i marker e per la modalità espansa
   const [markers, setMarkers] = useState([]);
-
-  //Update the markers state when a new marker is received
+  const [isMapExpanded, setIsMapExpanded] = useState(false);
+  
+  // Aggiorna lo stato dei marker quando ne arriva uno nuovo
   useEffect(() => {
     if (lastMarker) {
       setMarkers((prev) => [...prev, lastMarker]);
     }
   }, [lastMarker]);
 
+  // Log per debug quando lo stato di espansione cambia
+  useEffect(() => {
+    console.log("Map expanded state:", isMapExpanded);
+  }, [isMapExpanded]);
+  
+  // Gestisce il click sulla mappa per espandere/ridurre
+  const handleMapClick = (e) => {
+    // Stop propagation è necessario per evitare che il click arrivi ai componenti sottostanti
+    e.stopPropagation();
+    setIsMapExpanded(!isMapExpanded);
+    console.log("Map clicked, new state:", !isMapExpanded);
+  };
+
   return (
-    <MapContainer
-      center={[0, 0]}
-      zoom={13}
-      style={{ height: "100%", width: "100%" }}
+    <div 
+      className={`map-container ${isMapExpanded ? 'expanded' : ''}`}
+      onClick={handleMapClick}
     >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      />
-      {fixedMarkers.map((marker, index) => (
-        <Marker key={`fixed-${index}`} position={marker.position} icon={coloredIcon(marker.color)}>
-          <Popup>{marker.popupText}</Popup>
-        </Marker>
-      ))}
-      {markers.map((marker, index) => (
-        <Marker key={`marker-${index}`} position={marker.position} icon={coloredIcon('green')}>
-          <Popup>{marker.popupText}</Popup>
-        </Marker>
-      ))}
-      <PanToLastMarker lastMarker={lastMarker} />
-    </MapContainer>
+      <MapContainer
+        center={[0, 0]}
+        zoom={13}
+        style={{ height: "100%", width: "100%" }}
+        // Importante: evitare che i click sulla mappa attivino l'espansione/riduzione
+        onClick={(e) => e.originalEvent.stopPropagation()}
+      >
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        {fixedMarkers && fixedMarkers.map((marker, index) => (
+          <Marker key={`fixed-${index}`} position={marker.position} icon={coloredIcon(marker.color)}>
+            <Popup>{marker.popupText}</Popup>
+          </Marker>
+        ))}
+        {markers.map((marker, index) => (
+          <Marker key={`marker-${index}`} position={marker.position} icon={coloredIcon('green')}>
+            <Popup>{marker.popupText}</Popup>
+          </Marker>
+        ))}
+        <PanToLastMarker lastMarker={lastMarker} />
+      </MapContainer>
+    </div>
   );
 };
 

@@ -4,7 +4,7 @@ import { Chart as ChartJS } from "chart.js/auto";
 import "chartjs-adapter-date-fns";
 import { format } from "date-fns"; 
 
-const Charts = ({ data }) => {
+const Charts = ({ data, title, xLabel = "Time [s]", yLabel = "Speed [kn]" }) => {
   const chartRef = useRef(null);
 
   // Update the chart when new data is received
@@ -43,7 +43,7 @@ const Charts = ({ data }) => {
     labels: data.map((item) => item.x), 
     datasets: [
       {
-        label: "Temperature",
+        label: yLabel,
         data: data.map((item) => item.y),
         borderColor: "red",
         backgroundColor: "rgba(255, 0, 0, 0.2)",
@@ -52,6 +52,13 @@ const Charts = ({ data }) => {
   };
 
   const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false  // Rimuove la legenda
+      }
+    },
     scales: {
       x: {
         type: "time",
@@ -64,13 +71,24 @@ const Charts = ({ data }) => {
         },
         title: {
           display: true,
-          text: "Time (hh:mm:ss)",
+          text: xLabel,
         },
       },
+      y: {
+        title: {
+          display: true,
+          text: yLabel,
+        }
+      }
     },
   };
 
-  return <Line ref={chartRef} data={chartData} options={options} />;
+  return (
+    <div style={{ width: '100%', height: '100%' }}>
+      <h3 style={{ textAlign: "center" }}>{title}</h3>
+      <Line ref={chartRef} data={chartData} options={options} />
+    </div>
+  );
 };
 
 export default Charts;
