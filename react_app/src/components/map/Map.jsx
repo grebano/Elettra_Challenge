@@ -17,9 +17,24 @@ const PanToLastMarker = ({ lastMarker }) => {
 
   useEffect(() => {
     if (lastMarker?.position) {
-      map.panTo(lastMarker.position, { animate: true, duration: 1 });
+      if (map) {
+        map.panTo(lastMarker.position, { animate: true, duration: 1 });
+      }
     }
   }, [lastMarker, map]);
+
+  return null;
+};
+
+const MapExpanded = ({ isMapExpanded }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    console.log("Map expanded state:", isMapExpanded);
+    if (map) {
+      setTimeout(() => map.invalidateSize(), 300);
+    }
+  }, [isMapExpanded, map]);
 
   return null;
 };
@@ -35,16 +50,9 @@ const Map = ({ lastMarker, fixedMarkers }) => {
       setMarkers((prev) => [...prev, lastMarker]);
     }
   }, [lastMarker]);
-
-  // Log per debug quando lo stato di espansione cambia
-  useEffect(() => {
-    console.log("Map expanded state:", isMapExpanded);
-  }, [isMapExpanded]);
   
   // Gestisce il click sulla mappa per espandere/ridurre
   const handleMapClick = (e) => {
-    // Stop propagation è necessario per evitare che il click arrivi ai componenti sottostanti
-    e.stopPropagation();
     setIsMapExpanded(!isMapExpanded);
     console.log("Map clicked, new state:", !isMapExpanded);
   };
@@ -52,14 +60,12 @@ const Map = ({ lastMarker, fixedMarkers }) => {
   return (
     <div 
       className={`map-container ${isMapExpanded ? 'expanded' : ''}`}
-      onClick={handleMapClick}
+      onDoubleClick={handleMapClick}
     >
       <MapContainer
         center={[0, 0]}
         zoom={13}
         style={{ height: "100%", width: "100%" }}
-        // Importante: evitare che i click sulla mappa attivino l'espansione/riduzione
-        onClick={(e) => e.originalEvent.stopPropagation()}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -76,6 +82,7 @@ const Map = ({ lastMarker, fixedMarkers }) => {
           </Marker>
         ))}
         <PanToLastMarker lastMarker={lastMarker} />
+        <MapExpanded isMapExpanded={isMapExpanded} />
       </MapContainer>
     </div>
   );

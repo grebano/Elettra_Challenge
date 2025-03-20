@@ -1,29 +1,43 @@
 import { useState, useEffect } from 'react'
 import './App.css'
-import TemperatureDisplay from './components/temperature/TemperatureDisplay'
 import Charts from './components/charts/Charts'
 import Indicators from './components/status/Indicators' 
 import Map from './components/map/Map'
 import markers from './assets/map/fixed-markers.json'
+import DashUnit from './components/dash-unit/DashUnit'
 
 function App() {
   console.log("Rendering App component"); // Log per debug
 
   // Temperature states
-  const [temp, setTemp] = useState(null)
-  const [tempSeries, setTempSeries] = useState([])
+  const [temp, setTemp] = useState(null);
+  const [tempSeries, setTempSeries] = useState([]);
 
-  // New metrics states
-  const [batteryVolt, setBatteryVolt] = useState(null)
-  const [batteryPercent, setBatteryPercent] = useState(null)
-  const [inverterTemp, setInverterTemp] = useState(null)
-  const [energyTorque, setEnergyTorque] = useState(null)
-  const [motorCurrent, setMotorCurrent] = useState(null)
+  // Battery voltage states
+  const [batteryVolt, setBatteryVolt] = useState(null);
+  const [batteryVoltSeries, setBatteryVoltSeries] = useState([]);
+
+  // Battery percentage states
+  const [batteryPercent, setBatteryPercent] = useState(null);
+  const [batteryPercentSeries, setBatteryPercentSeries] = useState([]);
+
+  // Inverter temperature states
+  const [inverterTemp, setInverterTemp] = useState(null);
+  const [inverterTempSeries, setInverterTempSeries] = useState([]);
+
+  //Energy torque states
+  const [energyTorque, setEnergyTorque] = useState(null);
+  const [energyTorqueSeries, setEnergyTorqueSeries] = useState([]);
+
+  // Motor current states
+  const [motorCurrent, setMotorCurrent] = useState(null);
+  const [motorCurrentSeries, setMotorCurrentSeries] = useState([]);
 
   // Indicator states
   const [dataReceived, setDataReceived] = useState(false);
   const [dataStopped, setDataStopped] = useState(true);
   const [dataError, setDataError] = useState(false);
+  const [mqttConnectionStatus, setMqttConnectionStatus] = useState(false);
 
   // Map markers
   const [fixedMarkers] = useState(
@@ -43,7 +57,9 @@ function App() {
     try {
       window.electronAPI.GetMqttData((data) => {
         console.log("Received data:", data); // Log per debug
-        if (!data.data_stopped && !data.error) {
+        if (!data.data_stopped && !data.error && !data.offline) {
+          // Handle normal status
+          setMqttConnectionStatus(true);
           setDataStopped(false);
 
           setDataReceived(true);
@@ -56,11 +72,26 @@ function App() {
           }
           
           // Update the new metric states
-          if (data.batteryVolt !== undefined) setBatteryVolt(data.batteryVolt);
-          if (data.batteryPercent !== undefined) setBatteryPercent(data.batteryPercent);
-          if (data.inverterTemp !== undefined) setInverterTemp(data.inverterTemp);
-          if (data.energyTorque !== undefined) setEnergyTorque(data.energyTorque);
-          if (data.motorCurrent !== undefined) setMotorCurrent(data.motorCurrent);
+          if (data.battery_voltage !== undefined) {
+            setBatteryVolt(data.battery_voltage);
+            setBatteryVoltSeries((prev) => [...prev, { x: new Date(), y: data.battery_voltage }]);
+          }
+          if (data.battery_percentage !== undefined) {
+            setBatteryPercent(data.battery_percentage);
+            setBatteryPercentSeries((prev) => [...prev, { x: new Date(), y: data.battery_percentage }]);
+          }
+          if (data.inverter_temperature !== undefined) {
+            setInverterTemp(data.inverter_temperature);
+            setInverterTempSeries((prev) => [...prev, { x: new Date(), y: data.inverter_temperature }]);
+          }
+          if (data.energy_torque !== undefined) {
+            setEnergyTorque(data.energy_torque);
+            setEnergyTorqueSeries((prev) => [...prev, { x: new Date(), y: data.energy_torque }]);
+          }
+          if (data.motor_current !== undefined) {
+            setMotorCurrent(data.motor_current);
+            setMotorCurrentSeries((prev) => [...prev, { x: new Date(), y: data.motor_current }]);
+          }
           
           if (data.lat !== undefined && data.lon !== undefined) {
             const newMarker = {
@@ -69,10 +100,16 @@ function App() {
             };
             setLastMarker(newMarker);
           }
-        } else if (data.data_stopped) {
-          setDataStopped(true);
-        } else if (data.error) {
-          setDataError(true);
+        } else {
+          // Handle errors status
+          setDataError(data.error);
+          
+          // Handle offline status
+          setMqttConnectionStatus(!data.offline);
+
+
+          // Handle data stopped status
+          setDataStopped(data.data_stopped);
         }
       });
     } catch (error) {
@@ -83,56 +120,56 @@ function App() {
 
   return (
 
-      <div className="app-container">
-        <div className="temp-container">
-          <div className="metrics-grid">
-            <TemperatureDisplay temperature={temp} unit="°C" label="Temperature" />
-            <TemperatureDisplay temperature={batteryVolt} unit="V" label="Battery Voltage" />
-            <TemperatureDisplay temperature={batteryPercent} unit="%" label="Battery Level" />
-            <TemperatureDisplay temperature={inverterTemp} unit="°C" label="Inverter Temperature" />
-            <TemperatureDisplay temperature={energyTorque} unit="Nm" label="Energy Torque" />
-            <TemperatureDisplay temperature={motorCurrent} unit="A" label="Motor Current" />
-          </div>
+    <div className="app-container">
+      <div className="py-5"/>
+      <div className="metrics-grid">
+            <DashUnit datum={temp} unit="°C" label="Temperature" />
+            <DashUnit datum={batteryVolt} unit="V" label="Battery Voltage" />
+            <DashUnit datum={batteryPercent} unit="%" label="Battery Level" />
+            <DashUnit datum={inverterTemp} unit="°C" label="Inverter Temperature" />
+            <DashUnit datum={energyTorque} unit="Nm" label="Energy Torque" />
+            <DashUnit datum={motorCurrent} unit="A" label="Motor Current" />
         </div>
         <div className="py-3"/>
         <div className="charts-grid">
           <div className="chart-row">
             <div className="chart-wrapper">
-              <Charts data={tempSeries.slice(0, Math.min(10, tempSeries.length)) || []} 
+              <Charts data={tempSeries}
               title="Instant Speed" 
               yLabel="Speed (km/h)"
               xLabel="Time (s)"
              />
             </div>
             <div className="chart-wrapper">
-              <Charts data={tempSeries.slice(10, Math.min(20, tempSeries.length)) || []} title="Engine RPM" 
+              <Charts data={inverterTempSeries} title="Engine RPM" 
                yLabel="RPM"
                xLabel="Time (s)"/>
             </div>
           </div>
           <div className="chart-row">
             <div className="chart-wrapper">
-              <Charts data={tempSeries.slice(20, Math.min(30, tempSeries.length)) || []} title="Engine Current" 
+              <Charts data={motorCurrentSeries} title="Engine Current" 
                yLabel="Current (A)"
                xLabel="Time (s)"/>
             </div>
             <div className="chart-wrapper">
-              <Charts data={tempSeries.slice(30, Math.min(40, tempSeries.length)) || []} title="Engine Torque" 
+              <Charts data={energyTorqueSeries} title="Engine Torque" 
                yLabel="Torque (Nm)"
                xLabel="Time (s)"/>
             </div>
           </div>
         </div>
         <div className="py-3"/>
-        <div className="map-container">
+        <div>
           <Map lastMarker={lastMarker} fixedMarkers={fixedMarkers}/>
         </div>
-        <div className="py-3"/>
+        <div className="py-5"/>
         <div className="indicators-container">
           <Indicators
             dataReceived={dataReceived}
             dataStopped={dataStopped}
             dataError={dataError}
+            mqttConnectionStatus={mqttConnectionStatus}
           />
         </div>
       </div>

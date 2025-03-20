@@ -1,7 +1,7 @@
 import React from "react";
 import "./Indicators.css"; // Import the CSS file for styling
 
-const Indicators = ({ dataReceived, dataStopped, dataError }) => {
+const Indicators = ({ dataReceived, dataStopped, dataError, mqttConnectionStatus}) => {
   return (
     <div className="indicators">
       <div className="indicator-item">
@@ -24,6 +24,13 @@ const Indicators = ({ dataReceived, dataStopped, dataError }) => {
           title="Data Error"
         ></div>
         <span className="indicator-label">Data Error</span>
+      </div>
+      <div className="indicator-item">
+        <div
+          className={`indicator ${mqttConnectionStatus ? "green" : "red"}`}
+          title="Server Status"
+        ></div>
+        <span className="indicator-label">MQTT</span>
       </div>
     </div>
   );

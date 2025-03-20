@@ -7,27 +7,14 @@
   width: 100%;
 }
 
-/* Temperature display styling (optional) */
-.temperature-display {
-  margin: 20px 0; 
-}
-
-/* Temperature container */
-.temp-container {
-  margin: 0 auto;
-  text-align: center;
-  padding: 20px;
-  background-color: #f0f0f0;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
 /* Metrics grid for temperature and other readings */
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   justify-items: center;
+  margin: auto;
+  width: 40%;
 }
 
 /* For mobile devices */
