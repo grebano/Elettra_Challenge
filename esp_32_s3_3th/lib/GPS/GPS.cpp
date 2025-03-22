@@ -1,8 +1,7 @@
 #include "GPS.h"
 
-#define GPS_UART_NUM UART_NUM_1
-#define GPS_TXD_PIN (GPIO_NUM_17)
-#define GPS_RXD_PIN (GPIO_NUM_16)
+#define GPS_TXD_PIN (GPIO_NUM_43)
+#define GPS_RXD_PIN (GPIO_NUM_44)
 
 void initGPS() {
     Serial1.begin(9600, SERIAL_8N1, GPS_RXD_PIN, GPS_TXD_PIN);

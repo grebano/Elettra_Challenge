@@ -1,11 +1,11 @@
-#include <Arduino.h>
 #include <TinyGPS++.h>
-#include <DallasTemperature.h>
+
 #include "SDCard.h"
 #include "GPS.h"
 #include "Temperature.h"
+#include "SensorsData.h"
 
-#define REASSIGN_PINS
+#define REASSIGN_SD_PINS
 //┌─────────────────────────────────┐
 //│ SPI BUS                         │
 //├─────────────┬───────────────────┤
@@ -19,48 +19,35 @@
 TinyGPSPlus gps;
 
 // Temperature sensor setup
-DallasTemperature sensors;
+OneWire oneWire(GPIO_NUM_17);
+DallasTemperature sensors(&oneWire);
+
+// Sensor data
+SensorsData sensorsData = SensorsData();
 
 void setup() {
-    Serial.begin(115200);
 
-      
-    #ifdef REASSIGN_PINS
+    // Initialize SD card -------------------------------------------
+    #ifdef REASSIGN_SD_PINS
     SPI.begin(SCK, MISO, MOSI, CS);
     if (!SD.begin(CS)) {
     #else
     if (!SD.begin()) {
     #endif
-        Serial.println("Card Mount Failed");
-        return;
-    }
-    uint8_t cardType = SD.cardType();
-    
-    if (cardType == CARD_NONE) {
-        Serial.println("No SD card attached");
         return;
     }
     
-    Serial.print("SD Card Type: ");
-    if (cardType == CARD_MMC) {
-        Serial.println("MMC");
-    } else if (cardType == CARD_SD) {
-        Serial.println("SDSC");
-    } else if (cardType == CARD_SDHC) {
-        Serial.println("SDHC");
-    } else {
-        Serial.println("UNKNOWN");
-    }
-    
-    uint64_t cardSize = SD.cardSize() / (1024 * 1024);
-    Serial.printf("SD Card Size: %lluMB\n", cardSize);
-    
-    listDir(SD, "/", 0);
-    createDir(SD, "/Logs");
+    deleteAllFiles(SD, "/Logs");
+    createDir(SD, "/Logs");   
 
+    appendFile(SD, "/Logs/event.txt", "Device started\n");
+    // ---------------------------------------------------------------
 
+    // Initialize GPS
     initGPS();
-    initTemperatureSensors(sensors);
+
+    // Initialize temperature sensors
+    sensors.begin();
 }
 
 void loop() {
@@ -71,24 +58,24 @@ void loop() {
     }
 
     // Read temperature data
-    float temperatureC = readTemperature(sensors);
-    Serial.printf("Temperature: %.2f C\n", temperatureC);
+    sensors.requestTemperatures();
+    sensorsData.setTemperature(sensors.getTempCByIndex(0),0);
+    sensorsData.setTemperature(sensors.getTempCByIndex(1),1);
 
-    // Save data to SD card
-    char data[128];
-    snprintf(data, sizeof(data), "Latitude= %.6f Longitude= %.6f Temperature= %.2f C\n", gps.location.lat(), gps.location.lng(), temperatureC);
-
-    //log data in comprehensive file
-    appendFile(SD, "/Logs/data.txt", data);
 
     // Then perform specific logs
     if (gps.location.isUpdated()) {
         appendFile(SD, "/Logs/latitude.txt", String(gps.location.lat()).c_str());
         appendFile(SD, "/Logs/longitude.txt", String(gps.location.lng()).c_str());
     }
-    if (temperatureC != DEVICE_DISCONNECTED_C) {
-        appendFile(SD, "/Logs/temperature.txt", String(temperatureC).c_str());
+    if (sensorsData.getTemperature(0) != DEVICE_DISCONNECTED_C) {
+        String temperature = String(sensorsData.getTemperature(0)) + " C\n";
+        appendFile(SD, "/Logs/temperature0.txt", temperature.c_str());
+    }
+    if (sensorsData.getTemperature(1) != DEVICE_DISCONNECTED_C) {
+        String temperature = String(sensorsData.getTemperature(1)) + " C\n";
+        appendFile(SD, "/Logs/temperature1.txt", temperature.c_str());
     }
 
-    delay(2000);
+    delay(200);
 }

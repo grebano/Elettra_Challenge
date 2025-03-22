@@ -85,4 +85,11 @@ bool initSDCard();
  */
 bool saveDataToSDCard(const char* data);
 
+/**
+ * Delete all files in the specified directory
+ * @param fs Filesystem to use
+ * @param path Path to the directory
+ */
+void deleteAllFiles(fs::FS &fs, const char *path);
+
 #endif // SDCARD_H

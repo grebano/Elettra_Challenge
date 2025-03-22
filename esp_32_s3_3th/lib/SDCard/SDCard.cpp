@@ -180,3 +180,26 @@
    file.close();
  }
  
+ void deleteAllFiles(fs::FS &fs, const char *path) {
+   File root = fs.open(path);
+   if (!root) {
+     Serial.println("Failed to open directory");
+     return;
+   }
+   if (!root.isDirectory()) {
+     Serial.println("Not a directory");
+     return;
+   }
+ 
+   File file = root.openNextFile();
+   while (file) {
+     if (file.isDirectory()) {
+       deleteAllFiles(fs, file.path());
+     } else {
+       Serial.print("Deleting file: ");
+       Serial.println(file.path());
+       fs.remove(file.path());
+     }
+     file = root.openNextFile();
+   }
+ }
