@@ -29,6 +29,11 @@ public:
           String toString() const;
       };
 
+      struct TemperatureData {
+          float values[2];
+      };
+      
+
     float getTemperature(int index);
     float* getTemperature();
 
@@ -39,7 +44,7 @@ public:
     void setGPS(GPSData gpsData);
 
 private:
-    float temperature[2];
+    TemperatureData temperature;
     GPSData gpsData;
 };
 

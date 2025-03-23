@@ -54,7 +54,7 @@ void loop()
     readGPSData(gps);
 
     // Read temperature data
-    sensorsData.setTemperature(readTemperature(sensors));
+    readTemperature(sensors, sensorsData);
 
     // Then perform specific logs
     if (gps.location.isUpdated()) 

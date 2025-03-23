@@ -3,8 +3,8 @@
 // Constructor for the SensorsData class
 SensorsData::SensorsData() 
 {
-    temperature[0] = 0.0;
-    temperature[1] = 0.0;
+    temperature.values[0] = 0.0;
+    temperature.values[1] = 0.0;
     
     gpsData.latitude = 0.0;
     gpsData.longitude = 0.0;
@@ -24,12 +24,12 @@ SensorsData::SensorsData()
 // Get the temperature
 float SensorsData::getTemperature(int index) 
 {
-    return this->temperature[index];
+    return this->temperature.values[index];
 }
 
 float* SensorsData::getTemperature() 
 {
-    return this->temperature;
+    return this->temperature.values;
 }
 
 // Get the GPS data
@@ -41,14 +41,14 @@ SensorsData::GPSData SensorsData::getGPS()
 // Set the temperature
 void SensorsData::setTemperature(float temperature, int index) 
 {
-    this->temperature[index] = temperature;
+    this->temperature.values[index] = temperature;
 }
 
 // Set the temperature
 void SensorsData::setTemperature(float temperature[2]) 
 {
-    this->temperature[0] = temperature[0];
-    this->temperature[1] = temperature[1];
+    this->temperature.values[0] = temperature[0];
+    this->temperature.values[1] = temperature[1];
 }
 
 // Set the GPS data

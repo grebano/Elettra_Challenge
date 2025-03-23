@@ -1,9 +1,8 @@
 #include "Temperature.h"
+#include <SensorsData.h>
 
-float* readTemperature(DallasTemperature &sensors) {
-    static float temperatures[2];  // Static makes this persist between function calls
+void readTemperature(DallasTemperature &sensors, SensorsData &sensorsData) {
     sensors.requestTemperatures();
-    temperatures[0] = sensors.getTempCByIndex(0);
-    temperatures[1] = sensors.getTempCByIndex(1);
-    return temperatures;
+    sensorsData.setTemperature(sensors.getTempCByIndex(0), 0);
+    sensorsData.setTemperature(sensors.getTempCByIndex(1), 1);
 }
