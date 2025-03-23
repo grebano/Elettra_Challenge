@@ -7,19 +7,8 @@
   width: 100%;
 }
 
-/* Temperature display styling (optional) */
-.temperature-display {
-  margin: 20px 0; 
-}
-
-/* Temperature container */
-.temp-container {
-  margin: 0 auto;
-  text-align: center;
-  padding: 20px;
-  background-color: #f0f0f0;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+/* Metrics grid for temperature and other readings */
+.dash-unit-container {
 }
 
 /* Charts container */
@@ -34,9 +23,6 @@
 
 /* Map container */
 .map-container {
-  margin: 0 auto;
-  width: 75%;
-  height: 100vh;
 }
 
 /* Indicators container */
@@ -48,4 +34,19 @@
   gap: 40px; 
   background-color: #f0f0f0; 
   box-sizing: border-box; 
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  height: 30px;
+  width: 30px;
 }

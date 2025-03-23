@@ -4,5 +4,3 @@ contextBridge.exposeInMainWorld("electronAPI", {
   GetMqttData: (callback) =>
     ipcRenderer.on("mqtt-data-request", (event, data) => callback(data)),
 });
-
-//contextBridge.exposeInMainWorld("electron", {});
