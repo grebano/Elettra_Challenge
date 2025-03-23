@@ -1,5 +1,3 @@
-#include <TinyGPS++.h>
-
 #include "SDCard.h"
 #include "GPS.h"
 #include "Temperature.h"
@@ -25,8 +23,8 @@ DallasTemperature sensors(&oneWire);
 // Sensor data
 SensorsData sensorsData = SensorsData();
 
-void setup() {
-
+void setup() 
+{
     // Initialize SD card -------------------------------------------
     #ifdef REASSIGN_SD_PINS
     SPI.begin(SCK, MISO, MOSI, CS);
@@ -50,31 +48,29 @@ void setup() {
     sensors.begin();
 }
 
-void loop() {
+void loop() 
+{
     // Read GPS data
     readGPSData(gps);
-    if (gps.location.isUpdated()) {
-        Serial.printf("Latitude= %.6f Longitude= %.6f\n", gps.location.lat(), gps.location.lng());
-    }
 
     // Read temperature data
-    sensors.requestTemperatures();
-    sensorsData.setTemperature(sensors.getTempCByIndex(0),0);
-    sensorsData.setTemperature(sensors.getTempCByIndex(1),1);
-
+    sensorsData.setTemperature(readTemperature(sensors));
 
     // Then perform specific logs
-    if (gps.location.isUpdated()) {
+    if (gps.location.isUpdated()) 
+    {
         appendFile(SD, "/Logs/latitude.txt", String(gps.location.lat()).c_str());
         appendFile(SD, "/Logs/longitude.txt", String(gps.location.lng()).c_str());
     }
-    if (sensorsData.getTemperature(0) != DEVICE_DISCONNECTED_C) {
-        String temperature = String(sensorsData.getTemperature(0)) + " C\n";
-        appendFile(SD, "/Logs/temperature0.txt", temperature.c_str());
-    }
-    if (sensorsData.getTemperature(1) != DEVICE_DISCONNECTED_C) {
-        String temperature = String(sensorsData.getTemperature(1)) + " C\n";
-        appendFile(SD, "/Logs/temperature1.txt", temperature.c_str());
+
+    for (int i = 0; i < 2; i++) 
+    {
+        if (sensorsData.getTemperature(i) != DEVICE_DISCONNECTED_C) 
+        {
+            String temperature = String(sensorsData.getTemperature(i)) + " C\n";
+            String path = "/Logs/temperature" + String(i) + ".txt";
+            appendFile(SD, path.c_str(), temperature.c_str());
+        }
     }
 
     delay(200);

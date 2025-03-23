@@ -3,7 +3,8 @@
 
 #include <Arduino.h>
 
-class SensorsData {
+class SensorsData 
+{
 
 public:
 
@@ -29,7 +30,11 @@ public:
       };
 
     float getTemperature(int index);
+    float* getTemperature();
+
     void setTemperature(float temperature, int index);
+    void setTemperature(float temperature[2]);
+    
     GPSData getGPS();
     void setGPS(GPSData gpsData);
 

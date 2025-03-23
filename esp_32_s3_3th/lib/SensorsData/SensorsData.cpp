@@ -1,7 +1,8 @@
 #include <SensorsData.h>
 
 // Constructor for the SensorsData class
-SensorsData::SensorsData() {
+SensorsData::SensorsData() 
+{
     temperature[0] = 0.0;
     temperature[1] = 0.0;
     
@@ -21,27 +22,44 @@ SensorsData::SensorsData() {
 }
 
 // Get the temperature
-float SensorsData::getTemperature(int index) {
+float SensorsData::getTemperature(int index) 
+{
     return this->temperature[index];
 }
 
+float* SensorsData::getTemperature() 
+{
+    return this->temperature;
+}
+
 // Get the GPS data
-SensorsData::GPSData SensorsData::getGPS() {
+SensorsData::GPSData SensorsData::getGPS() 
+{
     return this->gpsData;
 }
 
 // Set the temperature
-void SensorsData::setTemperature(float temperature, int index) {
+void SensorsData::setTemperature(float temperature, int index) 
+{
     this->temperature[index] = temperature;
 }
 
+// Set the temperature
+void SensorsData::setTemperature(float temperature[2]) 
+{
+    this->temperature[0] = temperature[0];
+    this->temperature[1] = temperature[1];
+}
+
 // Set the GPS data
-void SensorsData::setGPS(GPSData gpsData) {
+void SensorsData::setGPS(GPSData gpsData) 
+{
     this->gpsData = gpsData;
 }
 
 // Convert the GPS data to a string
-String SensorsData::GPSData::toString() const {
+String SensorsData::GPSData::toString() const 
+{
     String str = "Latitude: " + String(latitude, 6) + "\n";
     str += "Longitude: " + String(longitude, 6) + "\n";
     str += "Altitude: " + String(altitude) + " m\n";

@@ -4,6 +4,6 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-float readTemperature(DallasTemperature &sensors);
+float* readTemperature(DallasTemperature &sensors);
 
 #endif // TEMPERATURE_H
