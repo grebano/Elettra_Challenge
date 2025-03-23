@@ -3,6 +3,7 @@
 
 #include <TinyGPS++.h>
 #include <SoftwareSerial.h>
+#include <SensorsData.h>
 
 // Define GPS pins
 #define GPS_RX_PIN (GPIO_NUM_16)  // Connect to TX of GPS module
@@ -14,5 +15,6 @@ extern SoftwareSerial gpsSerial;
 
 void initGPS();
 void readGPSData(TinyGPSPlus &gps);
+void readGPSData(TinyGPSPlus &gps, SensorsData &sensorsData);
 
 #endif // GPS_H

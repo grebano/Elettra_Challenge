@@ -18,3 +18,27 @@ void readGPSData(TinyGPSPlus &gps) {
         gps.encode(c);
     }
 }
+
+void readGPSData(TinyGPSPlus &gps, SensorsData &sensorsData) {
+    // Read data from GPS serial port
+    while (gpsSerial.available() > 0) {
+        char c = gpsSerial.read();
+        gps.encode(c);
+    }
+
+    sensorsData.setGPS(
+        gps.location.lat(),
+        gps.location.lng(),
+        gps.altitude.meters(),
+        gps.speed.kmph(),
+        gps.course.deg(),
+        gps.satellites.value(),
+        gps.date.year(),
+        gps.date.month(),
+        gps.date.day(),
+        gps.time.hour(),
+        gps.time.minute(),
+        gps.time.second(),
+        gps.location.isValid()
+    );
+}

@@ -57,6 +57,23 @@ void SensorsData::setGPS(GPSData gpsData)
     this->gpsData = gpsData;
 }
 
+void SensorsData::setGPS(float latitude, float longitude, float altitude, float speed, float course, uint32_t satellites, uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second, bool isValid) 
+{
+    this->gpsData.latitude = latitude;
+    this->gpsData.longitude = longitude;
+    this->gpsData.altitude = altitude;
+    this->gpsData.speed = speed;
+    this->gpsData.course = course;
+    this->gpsData.satellites = satellites;
+    this->gpsData.year = year;
+    this->gpsData.month = month;
+    this->gpsData.day = day;
+    this->gpsData.hour = hour;
+    this->gpsData.minute = minute;
+    this->gpsData.second = second;
+    this->gpsData.isValid = isValid;
+}
+
 // Convert the GPS data to a string
 String SensorsData::GPSData::toString() const 
 {

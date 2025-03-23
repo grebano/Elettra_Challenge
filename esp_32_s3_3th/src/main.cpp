@@ -25,6 +25,8 @@ SensorsData sensorsData = SensorsData();
 
 void setup() 
 {
+    Serial.begin(115200);
+
     // Initialize SD card -------------------------------------------
     #ifdef REASSIGN_SD_PINS
     SPI.begin(SCK, MISO, MOSI, CS);
@@ -51,7 +53,7 @@ void setup()
 void loop() 
 {
     // Read GPS data
-    readGPSData(gps);
+    readGPSData(gps, sensorsData);
 
     // Read temperature data
     readTemperature(sensors, sensorsData);
@@ -70,6 +72,7 @@ void loop()
             String temperature = String(sensorsData.getTemperature(i)) + " C\n";
             String path = "/Logs/temperature" + String(i) + ".txt";
             appendFile(SD, path.c_str(), temperature.c_str());
+            rotateLogFile(SD, path.c_str(), 1024 * 1024, 5);
         }
     }
 

@@ -203,3 +203,32 @@
      file = root.openNextFile();
    }
  }
+
+void rotateLogFile(fs::FS &fs, const char *path, size_t maxSize, int maxBackups) {
+  File file = fs.open(path);
+  if (file && file.size() > maxSize) {
+    file.close();
+    
+    // Delete oldest backup if it exists
+    String oldestBackup = String(path) + "." + String(maxBackups);
+    if (fs.exists(oldestBackup.c_str())) {
+      fs.remove(oldestBackup.c_str());
+    }
+    
+    // Shift existing backups
+    for (int i = maxBackups - 1; i >= 1; i--) {
+      String oldName = String(path) + "." + String(i);
+      String newName = String(path) + "." + String(i + 1);
+      if (fs.exists(oldName.c_str())) {
+        renameFile(fs, oldName.c_str(), newName.c_str());
+      }
+    }
+    
+    // Rename current file to .1
+    String backup = String(path) + ".1";
+    renameFile(fs, path, backup.c_str());
+    
+    // Create new empty file
+    writeFile(fs, path, "");
+  }
+}

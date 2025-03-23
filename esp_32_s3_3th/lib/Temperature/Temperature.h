@@ -3,6 +3,7 @@
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <SensorsData.h>
 
 void readTemperature(DallasTemperature &sensors, SensorsData &sensorsData);
 

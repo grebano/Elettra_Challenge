@@ -92,4 +92,14 @@ bool saveDataToSDCard(const char* data);
  */
 void deleteAllFiles(fs::FS &fs, const char *path);
 
+/**
+ * Log file rotation function
+ * 
+ * @param fs 
+ * @param path 
+ * @param maxSize 
+ * @param maxBackups 
+ */
+void rotateLogFile(fs::FS &fs, const char *path, size_t maxSize, int maxBackups);
+
 #endif // SDCARD_H

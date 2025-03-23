@@ -10,28 +10,28 @@ public:
 
     SensorsData();
 
-        // GPS data
-        struct GPSData {
-          float latitude;
-          float longitude;
-          float altitude;
-          float speed;
-          float course;
-          uint32_t satellites;
-          uint16_t year;
-          uint8_t month;
-          uint8_t day;
-          uint8_t hour;
-          uint8_t minute;
-          uint8_t second;
-          bool isValid;
-          
-          String toString() const;
-      };
+    // GPS data
+    struct GPSData {
+        float latitude;
+        float longitude;
+        float altitude;
+        float speed;
+        float course;
+        uint32_t satellites;
+        uint16_t year;
+        uint8_t month;
+        uint8_t day;
+        uint8_t hour;
+        uint8_t minute;
+        uint8_t second;
+        bool isValid;
+        
+        String toString() const;
+    };
 
-      struct TemperatureData {
-          float values[2];
-      };
+    struct TemperatureData {
+        float values[2];
+    };
       
 
     float getTemperature(int index);
@@ -42,6 +42,7 @@ public:
     
     GPSData getGPS();
     void setGPS(GPSData gpsData);
+    void setGPS(float latitude, float longitude, float altitude, float speed, float course, uint32_t satellites, uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second, bool isValid) ;
 
 private:
     TemperatureData temperature;
