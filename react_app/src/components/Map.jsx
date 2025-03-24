@@ -6,9 +6,8 @@ function LeafletMap({ lastMarker, fixedMarkers }) {
     <div className="p-6 bg-gray-50 rounded-xl">
       <div className="mb-4">
         <h2 className="text-xl font-semibold text-gray-800">
-          Location Dashboard
+          Realtime tracking
         </h2>
-        <p className="text-sm text-gray-500">Realtime location tracking</p>
       </div>
 
       <div className="bg-white p-1 rounded-xl shadow-sm">

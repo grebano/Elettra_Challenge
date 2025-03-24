@@ -78,12 +78,12 @@ const PanToLastMarker = ({ lastMarker }) => {
 };
 
 // Enhanced fit bounds with padding
-const FitBounds = ({ fixedMarkers }) => {
+const FitBounds = ({ markers }) => {
   const map = useMap();
 
   useEffect(() => {
-    if (fixedMarkers && fixedMarkers.length > 0) {
-      const bounds = fixedMarkers.map((marker) => marker.position);
+    if (markers && markers.length > 0) {
+      const bounds = markers.map((marker) => marker.position);
       map.fitBounds(bounds, {
         padding: [50, 50],
         maxZoom: 15,
@@ -91,7 +91,7 @@ const FitBounds = ({ fixedMarkers }) => {
         duration: 1,
       });
     }
-  }, [fixedMarkers, map]);
+  }, [markers, map]);
 
   return null;
 };
@@ -112,92 +112,52 @@ const CustomAttribution = () => {
   );
 };
 
-// Map Controls Component separated for stability
-const MapControls = ({ mapStyle, setMapStyle }) => {
-  return (
-    <div className="absolute top-4 right-4 bg-white bg-opacity-90 backdrop-blur-sm rounded-lg shadow-md p-2 z-50">
-      <div className="flex space-x-1">
-        <button
-          className={`px-3 py-1 text-xs rounded-md transition-colors ${
-            mapStyle === "light"
-              ? "bg-blue-500 text-white"
-              : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-          }`}
-          onClick={() => setMapStyle("light")}
-        >
-          Light
-        </button>
-        <button
-          className={`px-3 py-1 text-xs rounded-md transition-colors ${
-            mapStyle === "dark"
-              ? "bg-blue-500 text-white"
-              : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-          }`}
-          onClick={() => setMapStyle("dark")}
-        >
-          Dark
-        </button>
-        <button
-          className={`px-3 py-1 text-xs rounded-md transition-colors ${
-            mapStyle === "satellite"
-              ? "bg-blue-500 text-white"
-              : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-          }`}
-          onClick={() => setMapStyle("satellite")}
-        >
-          Satellite
-        </button>
-      </div>
-    </div>
-  );
-};
-
-// Separate Total Distance component for stability
-const TotalDistanceDisplay = ({ totalDistance }) => {
-  return (
-    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white bg-opacity-90 backdrop-blur-sm p-3 rounded-lg shadow-lg z-50 text-center min-w-32">
-      <h3 className="text-sm font-semibold text-gray-600">Total Distance</h3>
-      <p className="text-xl font-bold text-blue-600">
-        {totalDistance.toFixed(2)} km
-      </p>
-    </div>
-  );
-};
-
 const Map = ({ lastMarker, fixedMarkers = [] }) => {
-  const [allMarkers, setAllMarkers] = useState([]);
+  // Separate the route markers (dynamic) from fixed markers
+  const [routeMarkers, setRouteMarkers] = useState([]);
   const [mapStyle, setMapStyle] = useState("light");
   const [totalDistance, setTotalDistance] = useState(0);
   const lastMarkerRef = useRef(null);
   const mapRef = useRef(null);
 
-  // Update markers and calculate distance
-  useEffect(() => {
-    // Create a new array with fixed markers
-    const newMarkers = [...allMarkers];
+  // Process the color to a safe value for Tailwind
+  const processColor = (color) => {
+    if (!color) return "blue";
 
-    // Add the last marker if it exists and is new
+    // If it's a hex color starting with #, remove the #
+    if (typeof color === "string" && color.startsWith("#")) {
+      return color.substring(1).toLowerCase();
+    }
+
+    return color;
+  };
+
+  // Prepare fixed markers format from JSON
+  const preparedFixedMarkers = fixedMarkers;
+
+  // Update route markers when a new marker arrives
+  useEffect(() => {
     if (
       lastMarker &&
       (!lastMarkerRef.current ||
         JSON.stringify(lastMarker) !== JSON.stringify(lastMarkerRef.current))
     ) {
-      newMarkers.push(lastMarker);
+      // Add the new marker to route markers
+      setRouteMarkers((prevMarkers) => [...prevMarkers, lastMarker]);
       lastMarkerRef.current = lastMarker;
     }
+  }, [lastMarker]);
 
-    // Set the markers
-    setAllMarkers(newMarkers);
-
-    // Calculate the total distance with the positions
-    if (newMarkers.length >= 2) {
-      const positions = newMarkers.map((marker) => marker.position);
+  // Calculate the distance for dynamic route markers only
+  useEffect(() => {
+    if (routeMarkers.length >= 2) {
+      const positions = routeMarkers.map((marker) => marker.position);
       const distance = calculateTotalDistance(positions);
       setTotalDistance(distance);
     } else {
       setTotalDistance(0);
     }
-  }, [lastMarker, fixedMarkers]);
+  }, [routeMarkers]);
 
   // Map tile sources
   const mapTiles = {
@@ -219,8 +179,9 @@ const Map = ({ lastMarker, fixedMarkers = [] }) => {
   };
 
   const getColorClass = (colorName) => {
-    // Map color names to Tailwind color classes
+    // Map color names and hex colors to Tailwind color classes
     const colorMap = {
+      // Named colors
       red: "red",
       green: "green",
       blue: "blue",
@@ -231,86 +192,149 @@ const Map = ({ lastMarker, fixedMarkers = [] }) => {
       teal: "teal",
       indigo: "indigo",
       gray: "gray",
+      // Hex colors (without #)
+      ff0000: "red",
+      "000000": "gray",
+      "010101": "gray",
+      ff19e4: "pink",
+      "19ffc2": "teal",
     };
+
     return colorMap[colorName] || "blue";
   };
 
+  // All markers displayed on the map
+  const allMarkersForDisplay = [...preparedFixedMarkers, ...routeMarkers];
+
   return (
-    <div className="relative w-full h-full rounded-xl overflow-hidden shadow-lg">
-      {/* Map Controls - now a separate stable component */}
-      <MapControls mapStyle={mapStyle} setMapStyle={setMapStyle} />
-
-      <div className="w-full h-[500px] md:h-[700px] lg:h-[800px]" ref={mapRef}>
-        <MapContainer
-          center={[51.505, -0.09]}
-          zoom={13}
-          className={`w-full h-full rounded-xl ${
-            mapStyle === "dark" ? "contrast-110 brightness-105" : ""
-          }`}
-          zoomControl={false}
-        >
-          <TileLayer
-            url={mapTiles[mapStyle].url}
-            attribution={mapTiles[mapStyle].attribution}
-          />
-
-          {/* Polyline to connect markers */}
-          {allMarkers.length > 1 && (
-            <Polyline
-              positions={allMarkers.map((marker) => marker.position)}
-              color="#3388ff"
-              weight={3}
-              opacity={0.7}
-              dashArray="5, 10"
-            />
-          )}
-
-          {/* Render all markers */}
-          {[...fixedMarkers, ...allMarkers].map((marker, index) => (
-            <Marker
-              key={`marker-${index}`}
-              position={marker.position}
-              icon={premiumMarker(
-                getColorClass(marker.color) || "green",
-                marker.size || 12
-              )}
+    <div className="flex flex-col space-y-4">
+      {/* Map container and controls wrapper */}
+      <div className="relative w-full">
+        {/* Map type selector - positioned above the map */}
+        <div className="absolute top-0 right-0 z-10 bg-white rounded-bl-lg shadow-lg overflow-hidden z-1001">
+          <div className="flex">
+            <button
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                mapStyle === "light"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-100"
+              }`}
+              onClick={() => setMapStyle("light")}
             >
-              <Popup className="rounded-lg overflow-hidden shadow-lg">
-                <div className="p-3">
-                  <h3 className="font-semibold text-gray-800 mb-1">
-                    {marker.popupText || "Location"}
-                  </h3>
-                  {marker.description && (
-                    <p className="text-sm text-gray-600 mb-2">
-                      {marker.description}
-                    </p>
+              Light
+            </button>
+            <button
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                mapStyle === "dark"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-100"
+              }`}
+              onClick={() => setMapStyle("dark")}
+            >
+              Dark
+            </button>
+            <button
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                mapStyle === "satellite"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-100"
+              }`}
+              onClick={() => setMapStyle("satellite")}
+            >
+              Satellite
+            </button>
+          </div>
+        </div>
+
+        {/* Map container */}
+        <div className="rounded-xl overflow-hidden shadow-lg">
+          <div
+            className="w-full h-[500px] md:h-[700px] lg:h-[800px]"
+            ref={mapRef}
+          >
+            <MapContainer
+              center={[40.92, 9.51]} // Centered on your data
+              zoom={13}
+              className={`w-full h-full ${
+                mapStyle === "dark" ? "contrast-110 brightness-105" : ""
+              }`}
+              zoomControl={false}
+            >
+              <TileLayer
+                url={mapTiles[mapStyle].url}
+                attribution={mapTiles[mapStyle].attribution}
+              />
+
+              {/* Polyline to connect ONLY route markers, not fixed markers */}
+              {routeMarkers.length > 1 && (
+                <Polyline
+                  positions={routeMarkers.map((marker) => marker.position)}
+                  color="#3388ff"
+                  weight={3}
+                  opacity={0.7}
+                  dashArray="5, 10"
+                />
+              )}
+
+              {/* Render all markers */}
+              {allMarkersForDisplay.map((marker, index) => (
+                <Marker
+                  key={`marker-${index}`}
+                  position={marker.position}
+                  icon={premiumMarker(
+                    getColorClass(marker.color) || "blue",
+                    marker.size || 12
                   )}
-                  {marker.timestamp && (
-                    <div className="text-xs text-gray-500 mt-2">
-                      {new Date(marker.timestamp).toLocaleString()}
+                >
+                  <Popup className="rounded-lg overflow-hidden shadow-lg">
+                    <div className="p-3">
+                      <h3 className="font-semibold text-gray-800 mb-1">
+                        {marker.popupText || "Location"}
+                      </h3>
+                      {marker.description && (
+                        <p className="text-sm text-gray-600 mb-2">
+                          {marker.description}
+                        </p>
+                      )}
+                      {marker.timestamp && (
+                        <div className="text-xs text-gray-500 mt-2">
+                          {new Date(marker.timestamp).toLocaleString()}
+                        </div>
+                      )}
+                      {marker.image && (
+                        <img
+                          src={marker.image}
+                          alt={marker.popupText || "Location"}
+                          className="w-full rounded-md mt-2"
+                        />
+                      )}
                     </div>
-                  )}
-                  {marker.image && (
-                    <img
-                      src={marker.image}
-                      alt={marker.popupText || "Location"}
-                      className="w-full rounded-md mt-2"
-                    />
-                  )}
+                  </Popup>
+                </Marker>
+              ))}
+
+              <ZoomControl position="bottomright" />
+              <FitBounds markers={allMarkersForDisplay} />
+              <PanToLastMarker lastMarker={lastMarker} />
+              <CustomAttribution />
+            </MapContainer>
+
+            {/* Total distance display - fixed at the bottom of the map */}
+            <div className="absolute bottom-0 left-0 w-full flex justify-center pb-4 z-10 pointer-events-none z-1001">
+              <div className="bg-white px-6 py-2 rounded-full shadow-lg pointer-events-auto border-2 border-blue-500">
+                <div className="flex items-center">
+                  <div className="font-medium text-gray-700 mr-2">
+                    Total Distance:
+                  </div>
+                  <div className="text-xl font-bold text-blue-600">
+                    {totalDistance.toFixed(2)} km
+                  </div>
                 </div>
-              </Popup>
-            </Marker>
-          ))}
-
-          <ZoomControl position="bottomright" />
-          <FitBounds fixedMarkers={fixedMarkers} />
-          <PanToLastMarker lastMarker={lastMarker} />
-          <CustomAttribution />
-        </MapContainer>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      {/* Total distance display */}
-      <TotalDistanceDisplay totalDistance={totalDistance} />
     </div>
   );
 };
