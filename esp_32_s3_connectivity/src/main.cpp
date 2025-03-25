@@ -1,33 +1,27 @@
-#include <SPI.h>
-#include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include <EthernetESP32.h>
+#include "MQTT.h"
 
-// W5500 Ethernet module
+// Function prototypes
+JsonDocument generateRandomData();
+
+// Ethernet Configuration
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xEF};
-W5500Driver driver(14, 10, 9);
+W5500Driver w5500(14, 10, 9);
 
-// SPI interface
-SPIClass SPI1(HSPI);
-
-// Ethernet client
+// Ethernet Client
 EthernetClient ethClient;
 
-// MQTT broker details
+// MQTT Configuration
 const char *mqtt_server = "test.mosquitto.org"; // Public MQTT broker
 const int mqtt_port = 1883;                     // Default MQTT port
 const char *mqtt_topic = "TX000AA";             // MQTT topic to publish to
 
+// MQTT Handler
+MQTTHandler mqttHandler(ethClient);
+
 // JSON document
 JsonDocument jsonDoc;
-
-// MQTT client
-PubSubClient client(ethClient);
-
-// Function prototypes
-void callback(char *topic, byte *payload, unsigned int length);
-void reconnect();
-float randomFloat(float min, float max);
 
 void setup()
 {
@@ -35,104 +29,58 @@ void setup()
   Serial.begin(115200);
   delay(500);
 
-  // Initialize SPI interface
-  Serial.println("Initializing SPI...");
-  SPI1.begin(13, 12, 11);
-  delay(500);
-
+  // Setup Ethernet
   Serial.println("Initializing Ethernet...");
-  driver.setSPI(SPI1);
-  driver.setSpiFreq(10);
-  driver.setPhyAddress(0);
-
-  Ethernet.init(driver);
-
-  delay(500);
-
-  // Start Ethernet connection
+  SPI.begin(13, 12, 11);
+  Ethernet.init(w5500);
   Ethernet.begin(mac);
-  Serial.println("Ethernet connected");
   delay(500);
 
-  // Configure MQTT server and callback
-  client.setServer(mqtt_server, mqtt_port);
-  client.setCallback(callback);
-
-  // Connect to MQTT broker
-  if (client.connect("ESP32-S3-Ethernet-Client"))
-  {
-    Serial.println("Connected to MQTT broker");
-  }
-  else
-  {
-    Serial.println("Failed to connect to MQTT broker");
-  }
-
+  // Initialize MQTT
+  mqttHandler.setServer(mqtt_server, mqtt_port);
   delay(500);
 }
 
 void loop()
 {
-  // Ensure the client is connected
-  if (!client.connected())
-  {
-    reconnect();
-  }
-  client.loop();
+  // Reconnect to MQTT broker if necessary
+  mqttHandler.reconnect("ESP32-S3-Ethernet");
+
+  // Client loop
+  mqttHandler.loop();
 
   // Create JSON data
-  jsonDoc["device"] = "ESP32-S3-Ethernet";
-  jsonDoc["temperature"] = 25.5;
-  jsonDoc["humidity"] = 60.3;
-  jsonDoc["lat"] = randomFloat(43.0, 44.5);
-  jsonDoc["lon"] = randomFloat(7.5, 10.5);
+  jsonDoc.clear();
+  jsonDoc = generateRandomData();
 
-  // Convert JSON to string
-  char jsonBuffer[200];
-  serializeJson(jsonDoc, jsonBuffer);
-
-  // Publish JSON data to the topic
-  if (client.publish(mqtt_topic, jsonBuffer))
-  {
-    Serial.println("JSON data published:");
-    Serial.println(jsonBuffer);
-  }
-  else
-  {
-    Serial.println("Failed to publish JSON data");
-  }
+  // Publish JSON data to MQTT topic
+  mqttHandler.publish(mqtt_topic, jsonDoc);
 
   // Wait before sending the next message
   delay(5000);
 }
 
-// MQTT callback function (not used in this example)
-void callback(char *topic, byte *payload, unsigned int length)
+// Random data generation function
+JsonDocument generateRandomData()
 {
-  // Handle incoming messages (if needed)
-}
+  // Coordinates bounds
+  const float LAT_MIN = 43.0;
+  const float LAT_MAX = 44.5;
+  const float LON_MIN = 7.5;
+  const float LON_MAX = 10.5;
 
-// Reconnect to MQTT broker if disconnected
-void reconnect()
-{
-  while (!client.connected())
-  {
-    Serial.print("Attempting MQTT connection...");
-    if (client.connect("ESP32-S3-Ethernet-Client"))
-    {
-      Serial.println("connected");
-    }
-    else
-    {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      delay(5000);
-    }
-  }
-}
+  jsonDoc["device"] = "ESP32";
+  jsonDoc["temperature"] = 20.0 + random(100) / 100.0 * 10.0;
+  jsonDoc["battery_voltage"] = 3.0 + random(120) / 100.0;
+  jsonDoc["battery_percentage"] = 20 + random(81);
+  jsonDoc["inverter_temperature"] = 25.0 + random(260) / 10.0;
+  jsonDoc["energy_torque"] = random(100) / 100.0;
+  jsonDoc["motor_current"] = random(200) / 100.0;
+  jsonDoc["lat"] = LAT_MIN + random(150) / 100.0;
+  jsonDoc["lon"] = LON_MIN + random(300) / 100.0;
 
-float randomFloat(float min, float max)
-{
-  return min + (max - min) * (float)random(0, 1000000) / 999999.0;
+  // ESP32 memory usage
+  jsonDoc["heap"] = ESP.getFreeHeap();
+
+  return jsonDoc;
 }
