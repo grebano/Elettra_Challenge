@@ -25,3 +25,24 @@ void readTemperature(DallasTemperature &sensors, SensorsData &sensorsData) {
     sensorsData.setTemperature(sensors.getTempCByIndex(0), 0);
     sensorsData.setTemperature(sensors.getTempCByIndex(1), 1);
 }
+
+float readTemperature(DallasTemperature &sensors, uint8_t index) {
+    uint8_t count = sensors.getDS18Count();
+    index = (index >= count) ? count - 1 : index;
+    sensors.requestTemperatures();
+    return sensors.getTempCByIndex(index);
+}
+
+void readTemperature(DallasTemperature &sensors, float &temperature, uint8_t index) {
+    sensors.requestTemperatures();
+    temperature = sensors.getTempCByIndex(index);
+}
+
+String getTemperatureString(DallasTemperature &sensors, uint8_t index) {
+    sensors.requestTemperatures();
+    return String(sensors.getTempCByIndex(index));
+}
+
+uint8_t getDS18Count(DallasTemperature &sensors) {
+    return sensors.getDS18Count();
+}

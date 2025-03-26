@@ -48,21 +48,23 @@ void setup()
 
     // Initialize temperature sensors
     sensors.begin();
+    String count = "Number of temperature sensors: " + String(sensors.getDS18Count()) + "\n";
+    appendFile(SD, "/Logs/event.txt", count.c_str());
 }
 
 void loop() 
 {
     // Read GPS data
-    readGPSData(gps, sensorsData);
+    String gpsData;
+    readGPSData(gpsData);
 
     // Read temperature data
     readTemperature(sensors, sensorsData);
 
     // Then perform specific logs
-    if (gps.location.isUpdated()) 
+    if (gpsData.length() > 0)
     {
-        appendFile(SD, "/Logs/latitude.txt", String(gps.location.lat()).c_str());
-        appendFile(SD, "/Logs/longitude.txt", String(gps.location.lng()).c_str());
+        appendFile(SD, "/Logs/gps.txt", gpsData.c_str());
     }
 
     for (int i = 0; i < 2; i++) 

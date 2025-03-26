@@ -6,7 +6,7 @@
 #include <SensorsData.h>
 
 // Define GPS pins
-#define GPS_RX_PIN (GPIO_NUM_16)  // Connect to TX of GPS module
+#define GPS_RX_PIN (GPIO_NUM_18)  // Connect to TX of GPS module
 #define GPS_TX_PIN (GPIO_NUM_15)  // Connect to RX of GPS module
 #define GPS_BAUD_RATE 9600
 
@@ -15,6 +15,7 @@ extern SoftwareSerial gpsSerial;
 
 void initGPS();
 void readGPSData(TinyGPSPlus &gps);
+void readGPSData(String &gps);
 void readGPSData(TinyGPSPlus &gps, SensorsData &sensorsData);
 
 #endif // GPS_H
