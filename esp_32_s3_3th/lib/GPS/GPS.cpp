@@ -26,8 +26,6 @@
 // -.._(                  `-----'                                       `-
 // -----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----
 
-// Create software serial for GPS
-SoftwareSerial gpsSerial(GPS_RX_PIN, GPS_TX_PIN);
 
 void initGPS() {
     // Begin serial communication

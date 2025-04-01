@@ -3,7 +3,6 @@
 #include "Temperature.h"
 #include "SensorsData.h"
 
-#define REASSIGN_SD_PINS
 //┌─────────────────────────────────┐
 //│ SPI BUS                         │
 //├─────────────┬───────────────────┤
@@ -13,27 +12,46 @@
 #define CS      GPIO_NUM_4  // Chip Select
 //└─────────────┴───────────────────┘
 
+//┌─────────────────────────────────┐
+//│ GPS RX/TX                      │
+//├─────────────┬───────────────────┤
+#define GPS_RX_PIN GPIO_NUM_18  // Connect to TX of GPS module
+#define GPS_TX_PIN GPIO_NUM_15  // Connect to RX of GPS module
+//└─────────────┴───────────────────┘
+
+//┌─────────────────────────────────┐
+//│ DS18B20 Temperature Sensor      │
+//├─────────────┬───────────────────┤
+#define DS18B20_PIN GPIO_NUM_17  // Connect to DATA of DS18B20
+//└─────────────┴───────────────────┘
+
+//┌─────────────────────────────────┐
+//#define SIMULATED_MEASUREMENT
+//└─────────────────────────────────┘
+
+//───────────────────────────────────────────────────────────────────────────────────────────────────
 // GPS setup
 TinyGPSPlus gps;
+SoftwareSerial gpsSerial(GPS_RX_PIN, GPS_TX_PIN);
 
 // Temperature sensor setup
-OneWire oneWire(GPIO_NUM_17);
+OneWire oneWire(DS18B20_PIN);
 DallasTemperature sensors(&oneWire);
 
 // Sensor data
 SensorsData sensorsData = SensorsData();
 
+//───────────────────────────────────────────────────────────────────────────────────────────────────
+
 void setup() 
 {
     Serial.begin(115200);
 
-    // Initialize SD card -------------------------------------------
-    #ifdef REASSIGN_SD_PINS
+    // Initialize SD card --------------------------------------
     SPI.begin(SCK, MISO, MOSI, CS);
-    if (!SD.begin(CS)) {
-    #else
-    if (!SD.begin()) {
-    #endif
+    if (!SD.begin(CS)) 
+    {
+        // TODO handle error
         return;
     }
     
@@ -41,25 +59,37 @@ void setup()
     createDir(SD, "/Logs");   
 
     appendFile(SD, "/Logs/event.txt", "Device started\n");
-    // ---------------------------------------------------------------
+    appendFile(SD, "/Logs/event.txt", "SD card mounted\n");
 
-    // Initialize GPS
+    // Initialize GPS -------------------------------------------
     initGPS();
 
-    // Initialize temperature sensors
+    // Initialize temperature sensors----------------------------
     sensors.begin();
     String count = "Number of temperature sensors: " + String(sensors.getDS18Count()) + "\n";
     appendFile(SD, "/Logs/event.txt", count.c_str());
 }
 
+//───────────────────────────────────────────────────────────────────────────────────────────────────
+
 void loop() 
 {
+    #ifdef SIMULATED_MEASUREMENT
+
+    // Simulate GPS data
+    String gpsData = ExampleGPSData;
+    SensorsData.setTemperature(0, 25.0);
+    SensorsData.setTemperature(1, 26.0);
+
+    #else
+
     // Read GPS data
     String gpsData;
     readGPSData(gpsData);
-
     // Read temperature data
     readTemperature(sensors, sensorsData);
+
+    #endif // SIMULATED_MEASUREMENT
 
     // Then perform specific logs
     if (gpsData.length() > 0)
