@@ -2,6 +2,7 @@
 #include "GPS.h"
 #include "Temperature.h"
 #include "SensorsData.h"
+#include "MQTT.h"
 
 //┌─────────────────────────────────┐
 //│ SPI BUS                         │
@@ -29,6 +30,22 @@
 //#define SIMULATED_MEASUREMENT
 //└─────────────────────────────────┘
 
+//┌─────────────────────────────────┐
+#define ACTIVATE_COMMUNICATION
+//└─────────────────────────────────┘
+
+//┌─────────────────────────────────┐
+//│ ETHERNET CLIENT                  │
+//├─────────────┬───────────────────┤
+#define ETHERNET_CS_PIN  GPIO_NUM_14  // Chip Select for Ethernet module
+#define ETHERNET_RST_PIN GPIO_NUM_9   // Reset pin for Ethernet module
+#define ETHERNET_INT_PIN GPIO_NUM_10  // Interrupt pin for Ethernet module
+//├─────────────────────────────────┤
+#define ETHERNET_MOSI_PIN GPIO_NUM_11 // MOSI pin for Ethernet module
+#define ETHERNET_MISO_PIN GPIO_NUM_12 // MISO pin for Ethernet module
+#define ETHERNET_CLK_PIN  GPIO_NUM_13 // SCK pin for Ethernet module
+//└─────────────┴───────────────────┘
+
 //───────────────────────────────────────────────────────────────────────────────────────────────────
 // GPS setup
 TinyGPSPlus gps;
@@ -40,6 +57,25 @@ DallasTemperature sensors(&oneWire);
 
 // Sensor data
 SensorsData sensorsData = SensorsData();
+
+#ifdef ACTIVATE_COMMUNICATION
+// Ethernet Configuration
+byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xEF};
+W5500Driver w5500(ETHERNET_CS_PIN, ETHERNET_INT_PIN, ETHERNET_RST_PIN);
+EthernetClient ethClient;
+SPIClass ethernetSPI(HSPI);
+
+// MQTT Configuration
+const char *mqtt_server = "test.mosquitto.org"; // Public MQTT broker
+const int   mqtt_port   = 1883;                    // Default MQTT port
+const char *mqtt_topic  = "TX000AA";              // MQTT topic to publish to
+
+// MQTT Handler
+MQTTHandler mqttHandler(ethClient);
+
+// JSON document
+JsonDocument jsonDoc;
+#endif // ACTIVATE_COMMUNICATION
 
 //───────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -66,8 +102,28 @@ void setup()
 
     // Initialize temperature sensors----------------------------
     sensors.begin();
-    String count = "Number of temperature sensors: " + String(sensors.getDS18Count()) + "\n";
-    appendFile(SD, "/Logs/event.txt", count.c_str());
+    String feed = "Number of temperature sensors: " + String(sensors.getDS18Count()) + "\n";
+    appendFile(SD, "/Logs/event.txt", feed.c_str());
+
+    #ifdef ACTIVATE_COMMUNICATION
+    // Add this before Ethernet initialization
+    pinMode(ETHERNET_RST_PIN, OUTPUT);
+    digitalWrite(ETHERNET_RST_PIN, LOW);
+    delay(50);  // Hold reset for 50ms
+    digitalWrite(ETHERNET_RST_PIN, HIGH);
+    delay(250); // Give it time to initialize (W5500 needs ~150-200ms)
+
+    // Setup Ethernet -------------------------------------------
+    ethernetSPI.begin(ETHERNET_CLK_PIN, ETHERNET_MISO_PIN, ETHERNET_MOSI_PIN, ETHERNET_CS_PIN);
+    Ethernet.init(w5500);
+    bool ethOK = Ethernet.begin(mac);
+    feed = "Ethernet connected: " + String(ethOK ? "true" : "false") + "\n";
+    appendFile(SD, "/Logs/event.txt", feed.c_str());
+
+    // Initialize MQTT ------------------------------------------
+    mqttHandler.setServer(mqtt_server, mqtt_port);
+    appendFile(SD, "/Logs/event.txt", "MQTT server set\n");
+    #endif // ACTIVATE_COMMUNICATION
 }
 
 //───────────────────────────────────────────────────────────────────────────────────────────────────
@@ -108,5 +164,18 @@ void loop()
         }
     }
 
-    delay(200);
+    #ifdef ACTIVATE_COMMUNICATION
+    // Publish data to MQTT
+    mqttHandler.reconnect("ESP32-S3-Ethernet");
+    mqttHandler.loop();
+
+    // Create JSON data
+    jsonDoc.clear();
+    generateRandomData(jsonDoc);
+
+    // Publish JSON data to MQTT topic
+    mqttHandler.publish(mqtt_topic, jsonDoc);
+    #endif // ACTIVATE_COMMUNICATION
+
+    delay(20);
 }
