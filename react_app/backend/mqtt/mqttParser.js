@@ -3,21 +3,10 @@ const mqttClient = require(path.join(__dirname, "mqtt"));
 
 let mqttData = {
   data_stopped: true,
-  offline: true,
 };
 
 let dataStoppedTimeout, dataErrorTimeout;
 let callback = () => {};
-
-mqttClient.on("connect", () => {
-  console.log("MqttParser - onConnect: mqtt client connected");
-  mqttData.offline = false;
-
-  //Timeout due to callback not initialized yet
-  setTimeout(() => {
-    callback(mqttData);
-  }, 1000);
-});
 
 mqttClient.on("message", (topic, message) => {
   try {
@@ -69,8 +58,6 @@ mqttClient.on("error", (err) => {
 
 mqttClient.on("close", () => {
   console.log("MqttParser - onClose: mqtt connection closed");
-  mqttData.offline = true;
-  callback(mqttData);
 });
 
 mqttClient.on("offline", () => {
@@ -81,8 +68,6 @@ mqttClient.on("offline", () => {
 
 mqttClient.on("reconnect", () => {
   console.log("MqttParser - onReconnect: mqtt client is trying to reconnect");
-  mqttData.offline = true;
-  callback(mqttData);
 });
 
 module.exports = (localCallback) => {
