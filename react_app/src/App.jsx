@@ -3,6 +3,7 @@ import "./App.css";
 import Map from "./components/Map";
 import Live from "./components/Live";
 import Charts from "./components/Charts";
+import Logs from "./components/Logs";
 import markers from "./assets/map/fixed-markers.json";
 
 function App({ windowName }) {
@@ -37,6 +38,9 @@ function App({ windowName }) {
   const [dataStopped, setDataStopped] = useState(true);
   const [dataError, setDataError] = useState(false);
   const [mqttConnectionStatus, setMqttConnectionStatus] = useState(false);
+
+  //Event states
+  const [events, setEvents] = useState([]);
 
   // Map markers
   const [fixedMarkers] = useState(
@@ -128,6 +132,17 @@ function App({ windowName }) {
           setDataStopped(data.data_stopped);
         }
       });
+
+      window.electronAPI.GetEvents((event) => {
+        console.log("Received event:", event); // Log per debug
+        setEvents((prevEvents) => {
+          const newEvents = [...prevEvents, event];
+          if (newEvents.length > 50) {
+            newEvents.shift(); // Remove the oldest event if more than 50
+          }
+          return newEvents;
+        });
+      });
     } catch (error) {
       console.error("Error while fetching MQTT data:", error);
       setDataError(true);
@@ -168,6 +183,9 @@ function App({ windowName }) {
     case "#/map":
     case "#\\map":
       return <Map lastMarker={lastMarker} fixedMarkers={fixedMarkers} />;
+    case "#/logs":
+    case "#\\logs":
+      return <Logs events={events} />;
     default:
       return (
         <Live

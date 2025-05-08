@@ -1,5 +1,7 @@
+const { time } = require("console");
 const path = require("path");
 const mqttClient = require(path.join(__dirname, "mqtt"));
+const { sendEvent } = require(path.join(__dirname, "..", "logs", "logs"));
 
 let mqttData = {
   data_stopped: true,
@@ -19,27 +21,46 @@ mqttClient.on("message", (topic, message) => {
       clearTimeout(dataStoppedTimeout);
     }
 
-    console.log(`MqttParser - onMessage: received message from topic ${topic}`);
     mqttData = { ...mqttData, ...JSON.parse(message.toString()) };
+
+    sendEvent({
+      type: "info",
+      message: `MqttParser - onMessage: received message from topic ${topic}`,
+      time: new Date().toUTCString(),
+    });
 
     //Send data to frontend
     callback(mqttData);
 
     // Set a timeout to check if data stopped. 30 seconds is the default
     dataStoppedTimeout = setTimeout(() => {
-      console.log("MqttParser - onMessage: setTimeout -> data stopped");
+      sendEvent({
+        type: "warning",
+        message: `MqttParser - onMessage: data stopped`,
+        time: new Date().toUTCString(),
+      });
       mqttData.data_stopped = true;
       callback(mqttData);
     }, 30000);
   } catch (error) {
     mqttData.error = true;
     callback(mqttData);
-    console.error("MqttParser - onMessage: error parsing message", error);
+
+    sendEvent({
+      type: "error",
+      message: `MqttParser - onMessage: error parsing message ${error}`,
+      time: new Date().toUTCString(),
+    });
   }
 });
 
 mqttClient.on("error", (err) => {
-  console.error("MqttParser - onError:", err);
+  sendEvent({
+    type: "error",
+    message: `MqttParser - onError: ${err}`,
+    time: new Date().toUTCString(),
+  });
+
   // Clear the timeout if a new error occurs
   if (dataErrorTimeout) {
     clearTimeout(dataErrorTimeout);
@@ -50,24 +71,47 @@ mqttClient.on("error", (err) => {
 
   // Keep the error message for 30 seconds
   dataErrorTimeout = setTimeout(() => {
-    console.log("MqttParser - onError: setTimeout -> clear error message");
     mqttData.error = false;
     callback(mqttData);
   }, 30000);
 });
 
+// Event when the client is closed
 mqttClient.on("close", () => {
-  console.log("MqttParser - onClose: mqtt connection closed");
+  sendEvent({
+    type: "warning",
+    message: `MqttParser - onClose: mqtt connection closed`,
+    time: new Date().toUTCString(),
+  });
 });
 
+// Event when the client goes offline
 mqttClient.on("offline", () => {
-  console.log("MqttParser - onOffline: mqtt client is offline");
+  sendEvent({
+    type: "warning",
+    message: `MqttParser - onOffline: mqtt client is offline`,
+    time: new Date().toUTCString(),
+  });
   mqttData.offline = true;
   callback(mqttData);
 });
 
+// Event when the client tries to reconnect
 mqttClient.on("reconnect", () => {
-  console.log("MqttParser - onReconnect: mqtt client is trying to reconnect");
+  sendEvent({
+    type: "info",
+    message: `MqttParser - onReconnect: mqtt client is trying to reconnect`,
+    time: new Date().toUTCString(),
+  });
+});
+
+// Event when the client successfully connects to the broker
+mqttClient.on("connect", () => {
+  sendEvent({
+    type: "success",
+    message: `MqttParser - onConnect: mqtt client connected`,
+    time: new Date().toUTCString(),
+  });
 });
 
 module.exports = (localCallback) => {
