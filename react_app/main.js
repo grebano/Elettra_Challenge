@@ -9,8 +9,8 @@ const mqttCallback = require(path.join(
 const { eventCallback, sendEvent } = require(path.join(
   __dirname,
   "backend",
-  "logs",
-  "logs"
+  "events",
+  "events"
 ));
 
 module.exports = {

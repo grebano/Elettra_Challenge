@@ -1,7 +1,6 @@
-const { time } = require("console");
 const path = require("path");
 const mqttClient = require(path.join(__dirname, "mqtt"));
-const { sendEvent } = require(path.join(__dirname, "..", "logs", "logs"));
+const { sendEvent } = require(path.join(__dirname, "..", "events", "events"));
 
 let mqttData = {
   data_stopped: true,
