@@ -5,7 +5,7 @@ let client;
 
 if (!client) {
   client = mqtt.connect(`mqtt://${settings.mqtt.host}`, {
-    reconnectPeriod: 1000,
+    reconnectPeriod: 5000,
     clientId: "elettra-unige_" + Math.random().toString(16).slice(3),
   });
 

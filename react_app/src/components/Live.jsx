@@ -1,4 +1,4 @@
-import React from "react";
+import React, { use, useEffect, useState } from "react";
 import DashUnit from "./dash-unit/DashUnit";
 import Indicators from "./status/Indicators";
 
@@ -97,11 +97,12 @@ function Live({
   dataReceived,
   dataStopped,
   dataError,
+  mqttConnectionStatus,
 }) {
   // Get time for the dashboard
-  const [currentTime, setCurrentTime] = React.useState(new Date());
+  const [currentTime, setCurrentTime] = useState(new Date());
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -152,7 +153,6 @@ function Live({
                 <span className="text-4xl font-bold">{temp || "--"}</span>
                 <span className="text-xl ml-1">kn</span>
               </div>
-              <div className="mt-2 text-blue-100 text-sm">Target: 25.0 kn</div>
             </div>
 
             {/* Battery Card */}
@@ -250,6 +250,7 @@ function Live({
           dataReceived={dataReceived}
           dataStopped={dataStopped}
           dataError={dataError}
+          mqttConnectionStatus={mqttConnectionStatus}
         />
       </div>
     </div>

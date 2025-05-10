@@ -1,6 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 
-const Indicators = ({ dataReceived, dataStopped, dataError }) => {
+const Indicators = ({
+  dataReceived,
+  dataStopped,
+  dataError,
+  mqttConnectionStatus,
+}) => {
   return (
     <div className="flex flex-wrap gap-5 justify-center bg-white p-5 rounded-xl shadow-md border border-gray-100 w-full max-w-3xl backdrop-blur-sm bg-white/90">
       <StatusIndicator
@@ -8,6 +13,8 @@ const Indicators = ({ dataReceived, dataStopped, dataError }) => {
         label="Data Received"
         activeColor="bg-emerald-500"
         textColor="text-emerald-700"
+        defaultColor="bg-gray-300"
+        defaultTextColor="text-gray-500"
         pulseEffect={dataReceived}
       />
       <StatusIndicator
@@ -15,6 +22,8 @@ const Indicators = ({ dataReceived, dataStopped, dataError }) => {
         label="Data Stopped"
         activeColor="bg-amber-500"
         textColor="text-amber-700"
+        defaultColor="bg-gray-300"
+        defaultTextColor="text-gray-500"
         pulseEffect={dataStopped}
       />
       <StatusIndicator
@@ -22,7 +31,18 @@ const Indicators = ({ dataReceived, dataStopped, dataError }) => {
         label="Data Error"
         activeColor="bg-rose-500"
         textColor="text-rose-700"
+        defaultColor="bg-gray-300"
+        defaultTextColor="text-gray-500"
         pulseEffect={dataError}
+      />
+      <StatusIndicator
+        active={!mqttConnectionStatus}
+        label="MQTT"
+        activeColor="bg-rose-500"
+        textColor="text-rose-700"
+        defaultColor="bg-emerald-500"
+        defaultTextColor="text-emerald-700"
+        pulseEffect={!mqttConnectionStatus}
       />
     </div>
   );
@@ -33,6 +53,8 @@ const StatusIndicator = ({
   label,
   activeColor,
   textColor,
+  defaultColor,
+  defaultTextColor,
   pulseEffect,
 }) => (
   <div
@@ -43,7 +65,7 @@ const StatusIndicator = ({
     <div className="relative mr-2">
       <div
         className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-          active ? activeColor : "bg-gray-300"
+          active ? activeColor : defaultColor
         }`}
         title={label}
       ></div>
@@ -55,7 +77,7 @@ const StatusIndicator = ({
     </div>
     <span
       className={`text-sm font-medium ${
-        active ? textColor : "text-gray-500"
+        active ? textColor : defaultTextColor
       } transition-colors duration-300`}
     >
       {label}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import "./App.css";
 import Map from "./components/Map";
 import Live from "./components/Live";
@@ -37,7 +37,7 @@ function App({ windowName }) {
   const [dataReceived, setDataReceived] = useState(false);
   const [dataStopped, setDataStopped] = useState(true);
   const [dataError, setDataError] = useState(false);
-  const [mqttConnectionStatus, setMqttConnectionStatus] = useState(false);
+  const [mqttConnectionStatus, setMqttConnectionStatus] = useState(true);
 
   //Event states
   const [events, setEvents] = useState([]);
@@ -56,80 +56,69 @@ function App({ windowName }) {
 
   // Get data from the main process
   useEffect(() => {
-    console.log("App component mounted or updated"); // Log per debug
     try {
       window.electronAPI.GetMqttData((data) => {
         console.log("Received data:", data); // Log per debug
-        if (!data.data_stopped && !data.error && !data.offline) {
-          // Handle normal status
-          setMqttConnectionStatus(true);
-          setDataStopped(false);
 
-          setDataReceived(true);
-          setTimeout(() => setDataReceived(false), 250);
+        // Handle normal status
+        setMqttConnectionStatus(true);
+        setDataStopped(false);
 
-          // Update the temperature state
-          if (data.temperature !== undefined) {
-            setTemp(data.temperature);
-            setTempSeries((prev) => [
-              ...prev,
-              { x: new Date(), y: data.temperature },
-            ]);
-          }
+        setDataReceived(true);
+        setTimeout(() => setDataReceived(false), 250);
 
-          // Update the new metric states
-          if (data.battery_voltage !== undefined) {
-            setBatteryVolt(data.battery_voltage);
-            setBatteryVoltSeries((prev) => [
-              ...prev,
-              { x: new Date(), y: data.battery_voltage },
-            ]);
-          }
-          if (data.battery_percentage !== undefined) {
-            setBatteryPercent(data.battery_percentage);
-            setBatteryPercentSeries((prev) => [
-              ...prev,
-              { x: new Date(), y: data.battery_percentage },
-            ]);
-          }
-          if (data.inverter_temperature !== undefined) {
-            setInverterTemp(data.inverter_temperature);
-            setInverterTempSeries((prev) => [
-              ...prev,
-              { x: new Date(), y: data.inverter_temperature },
-            ]);
-          }
-          if (data.energy_torque !== undefined) {
-            setEnergyTorque(data.energy_torque);
-            setEnergyTorqueSeries((prev) => [
-              ...prev,
-              { x: new Date(), y: data.energy_torque },
-            ]);
-          }
-          if (data.motor_current !== undefined) {
-            setMotorCurrent(data.motor_current);
-            setMotorCurrentSeries((prev) => [
-              ...prev,
-              { x: new Date(), y: data.motor_current },
-            ]);
-          }
+        // Update the temperature state
+        if (data.temperature !== undefined) {
+          setTemp(data.temperature);
+          setTempSeries((prev) => [
+            ...prev,
+            { x: new Date(), y: data.temperature },
+          ]);
+        }
 
-          if (data.lat !== undefined && data.lon !== undefined) {
-            const newMarker = {
-              position: [data.lat, data.lon],
-              popupText: new Date().toUTCString(),
-            };
-            setLastMarker(newMarker);
-          }
-        } else {
-          // Handle errors status
-          setDataError(data.error);
+        // Update the new metric states
+        if (data.battery_voltage !== undefined) {
+          setBatteryVolt(data.battery_voltage);
+          setBatteryVoltSeries((prev) => [
+            ...prev,
+            { x: new Date(), y: data.battery_voltage },
+          ]);
+        }
+        if (data.battery_percentage !== undefined) {
+          setBatteryPercent(data.battery_percentage);
+          setBatteryPercentSeries((prev) => [
+            ...prev,
+            { x: new Date(), y: data.battery_percentage },
+          ]);
+        }
+        if (data.inverter_temperature !== undefined) {
+          setInverterTemp(data.inverter_temperature);
+          setInverterTempSeries((prev) => [
+            ...prev,
+            { x: new Date(), y: data.inverter_temperature },
+          ]);
+        }
+        if (data.energy_torque !== undefined) {
+          setEnergyTorque(data.energy_torque);
+          setEnergyTorqueSeries((prev) => [
+            ...prev,
+            { x: new Date(), y: data.energy_torque },
+          ]);
+        }
+        if (data.motor_current !== undefined) {
+          setMotorCurrent(data.motor_current);
+          setMotorCurrentSeries((prev) => [
+            ...prev,
+            { x: new Date(), y: data.motor_current },
+          ]);
+        }
 
-          // Handle offline status
-          setMqttConnectionStatus(!data.offline);
-
-          // Handle data stopped status
-          setDataStopped(data.data_stopped);
+        if (data.lat !== undefined && data.lon !== undefined) {
+          const newMarker = {
+            position: [data.lat, data.lon],
+            popupText: new Date().toUTCString(),
+          };
+          setLastMarker(newMarker);
         }
       });
 
@@ -142,10 +131,38 @@ function App({ windowName }) {
           }
           return newEvents;
         });
+
+        if (event.code) {
+          switch (event.code) {
+            case "mqtt-stopped":
+              setDataStopped(true);
+              break;
+            case "mqtt-data-error":
+              setDataError(true);
+              setTimeout(() => {
+                setDataError(false);
+              }, 5000);
+              break;
+            case "mqtt-closed":
+            case "mqtt-offline":
+            case "mqtt-reconnect":
+            case "mqtt-error":
+              setMqttConnectionStatus(false);
+              break;
+            case "mqtt-connected":
+              setMqttConnectionStatus(true);
+              break;
+            default:
+              break;
+          }
+        }
       });
     } catch (error) {
       console.error("Error while fetching MQTT data:", error);
       setDataError(true);
+      setTimeout(() => {
+        setDataError(false);
+      }, 5000);
     }
   }, []);
 
@@ -163,6 +180,7 @@ function App({ windowName }) {
           dataReceived={dataReceived}
           dataStopped={dataStopped}
           dataError={dataError}
+          mqttConnectionStatus={mqttConnectionStatus}
         />
       );
     case "#/charts":
@@ -178,6 +196,7 @@ function App({ windowName }) {
           dataReceived={dataReceived}
           dataStopped={dataStopped}
           dataError={dataError}
+          mqttConnectionStatus={mqttConnectionStatus}
         />
       );
     case "#/map":
@@ -193,6 +212,7 @@ function App({ windowName }) {
           dataReceived={dataReceived}
           dataStopped={dataStopped}
           dataError={dataError}
+          mqttConnectionStatus={mqttConnectionStatus}
         />
       );
   }

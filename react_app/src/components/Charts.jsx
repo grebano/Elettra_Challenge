@@ -12,6 +12,7 @@ function ChartContainer({
   dataReceived,
   dataStopped,
   dataError,
+  mqttConnectionStatus,
 }) {
   const [activeTab, setActiveTab] = useState("all");
 
@@ -86,7 +87,7 @@ function ChartContainer({
   };
 
   return (
-    <div className="p-6 bg-gray-50 rounded-xl shadow-md">
+    <div className="p-6 bg-gray-50 rounded-xl shadow-md pb-24">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-4 md:mb-0">
           Historical Data
@@ -159,6 +160,7 @@ function ChartContainer({
           dataReceived={dataReceived}
           dataStopped={dataStopped}
           dataError={dataError}
+          mqttConnectionStatus={mqttConnectionStatus}
         />
       </div>
     </div>

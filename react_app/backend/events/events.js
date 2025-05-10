@@ -2,8 +2,6 @@ let callback = () => {};
 
 module.exports = {
   sendEvent: (event) => {
-    callback(event);
-
     switch (event.type) {
       case "error":
         console.error("Error event:", event.message);
@@ -21,6 +19,8 @@ module.exports = {
         console.log("Event:", event);
         break;
     }
+
+    callback(event);
   },
   eventCallback: (cb) => {
     callback = cb;

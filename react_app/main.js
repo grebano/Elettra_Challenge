@@ -54,29 +54,31 @@ mqttCallback((data) => {
 // Callback for sending events to the logs window
 eventCallback((data) => {
   try {
-    if (windows.logs) {
-      // Check if the logs window is destroyed before sending data
-      if (
-        !windows.logs.isDestroyed() &&
-        !windows.logs.webContents.isDestroyed()
-      ) {
-        windows.logs.webContents.send("event-request", data);
-      } else {
-        // Clean up destroyed window reference
-        console.log("Removing reference to destroyed logs window");
-        delete windows.logs;
+    Object.keys(windows).forEach((windowName) => {
+      // More robust check to ensure window isn't destroyed
+      const win = windows[windowName];
+      if (win && !win.isDestroyed() && !win.webContents.isDestroyed()) {
+        win.webContents.send("event-data-request", data);
+      } else if (win && (win.isDestroyed() || win.webContents.isDestroyed())) {
+        // Clean up destroyed window references
+        console.log(`Removing reference to destroyed window: ${windowName}`);
+        delete windows[windowName];
       }
-    }
+    });
   } catch (error) {
     console.error("Error sending event data to windows:", error);
   }
 });
 
-function createWindow(window = "live") {
-  if (windows[window]) {
-    windows[window].focus();
+function createWindow(windowName = "live") {
+  // Log window creation for debugging
+  console.log(`Creating window: ${windowName}`);
+
+  if (windows[windowName]) {
+    console.log(`Window ${windowName} already exists, focusing`);
+    windows[windowName].focus();
   } else {
-    windows[window] = new BrowserWindow({
+    windows[windowName] = new BrowserWindow({
       width: 800,
       height: 600,
       webPreferences: {
@@ -89,34 +91,31 @@ function createWindow(window = "live") {
     });
 
     // Add window close event to clean up references
-    windows[window].on("closed", () => {
-      console.log(`Window ${window} closed, removing reference`);
-      delete windows[window];
+    windows[windowName].on("closed", () => {
+      console.log(`Window ${windowName} closed, removing reference`);
+      delete windows[windowName];
     });
 
+    // Log window hash/route for debugging
+    console.log(`Loading window ${windowName} with route: #/${windowName}`);
+
     if (process.env.NODE_ENV === "development") {
-      windows[window].loadURL("http://localhost:5173#/" + window);
-      windows[window].webContents.openDevTools();
+      windows[windowName].loadURL(`http://localhost:5173#/${windowName}`);
+      windows[windowName].webContents.openDevTools();
     } else {
-      // Fix path for production - use current directory instead of "../build"
       const indexPath = path.join(__dirname, "./build/index.html");
       console.log("Loading from path:", indexPath);
-      windows[window].loadURL(`file://${indexPath}#/${window}`);
-
-      // Temporarily enable DevTools in production for debugging
-      windows[window].webContents.openDevTools();
-
-      // Log any errors that occur during page load
-      windows[window].webContents.on(
-        "did-fail-load",
-        (event, errorCode, errorDescription) => {
-          console.error("Page failed to load:", errorCode, errorDescription);
-        }
-      );
+      windows[windowName].loadURL(`file://${indexPath}#/${windowName}`);
+      windows[windowName].webContents.openDevTools();
     }
 
+    // Log when page is fully loaded
+    windows[windowName].webContents.on("did-finish-load", () => {
+      console.log(`Window ${windowName} finished loading`);
+    });
+
     // Set Content Security Policy
-    windows[window].webContents.session.webRequest.onHeadersReceived(
+    windows[windowName].webContents.session.webRequest.onHeadersReceived(
       (details, callback) => {
         // Force development CSP for localhost URLs or if FORCE_DEV_CSP is set
         const isLocalhost =
@@ -151,7 +150,7 @@ function createWindow(window = "live") {
     );
 
     // Log blocked content
-    windows[window].webContents.session.webRequest.onErrorOccurred(
+    windows[windowName].webContents.session.webRequest.onErrorOccurred(
       (details) => {
         if (details.error === "net::ERR_BLOCKED_BY_CLIENT") {
           console.error("CSP Blocked URL:", details.url);
@@ -160,5 +159,5 @@ function createWindow(window = "live") {
     );
   }
 
-  return windows[window];
+  return windows[windowName];
 }
