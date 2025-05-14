@@ -1,7 +1,15 @@
 {
-    "mqtt": {
-        "host": "test.mosquitto.org",
-        "port": 1883,
-        "topic": "TX000AA"
-    }
+   "mqtt":{
+      "host":"test.mosquitto.org",
+      "port":1883,
+      "topic":"TX000AA"
+   },
+   "grafana":{
+      "url":"http://154.62.108.192:3001/monitoringdata/",
+      "team":"7Cv7rgZkSjCA2r9eeNc9JcKFutZzTEhj",
+      "postStrategy":{
+         "mode": "MESSAGE",
+         "intervalMs": 500
+      }
+   }
 }

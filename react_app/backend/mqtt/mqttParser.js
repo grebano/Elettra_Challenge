@@ -1,14 +1,19 @@
-const { set } = require("date-fns");
 const path = require("path");
 const mqttClient = require(path.join(__dirname, "mqtt"));
 const { sendEvent } = require(path.join(__dirname, "..", "events", "events"));
+const { initializeGrafana, updateData } = require(path.join(
+  __dirname,
+  "..",
+  "grafana",
+  "grafana"
+));
 
-let mqttData = {
-  data_stopped: true,
-};
-
+let mqttData = {};
 let dataStoppedTimeout;
 let callback = () => {};
+
+// Start the Grafana post strategy
+initializeGrafana();
 
 mqttClient.on("message", (topic, message) => {
   try {
@@ -28,6 +33,9 @@ mqttClient.on("message", (topic, message) => {
 
     //Send data to frontend
     callback(mqttData);
+
+    // Send data to Grafana
+    updateData(mqttData);
 
     // Set a timeout to check if data stopped. 30 seconds is the default
     dataStoppedTimeout = setTimeout(() => {
