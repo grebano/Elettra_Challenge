@@ -1,7 +1,7 @@
 const path = require("path");
 const mqttClient = require(path.join(__dirname, "mqtt"));
 const { sendEvent } = require(path.join(__dirname, "..", "events", "events"));
-const { initializeGrafana, updateGrafana } = require(path.join(
+const { updateGrafana } = require(path.join(
   __dirname,
   "..",
   "grafana",
@@ -11,9 +11,6 @@ const { initializeGrafana, updateGrafana } = require(path.join(
 let mqttData = {};
 let dataStoppedTimeout;
 let callback = () => {};
-
-// Start the Grafana post strategy
-//initializeGrafana();
 
 mqttClient.on("message", (topic, message) => {
   try {

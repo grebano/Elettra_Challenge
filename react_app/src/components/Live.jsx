@@ -160,15 +160,6 @@ function Live({
     setGrafanaRunning(!grafanaRunning);
   };
 
-  const handleRestart = () => {
-    // Logic to restart Grafana backend
-    setGrafanaRunning(false);
-    window.electronAPI.RestartGrafana();
-    setTimeout(() => {
-      setGrafanaRunning(true);
-    }, 1000);
-  };
-
   return (
     <div className="p-4 md:p-6 bg-gradient-to-br from-blue-50 via-indigo-50 to-white min-h-screen flex flex-col items-center">
       {/* Header with time and title */}
@@ -189,14 +180,9 @@ function Live({
               }`}
             >
               <PlayPauseIcon />
-              <span className="ml-2">{grafanaRunning ? "Stop" : "Start"}</span>
-            </button>
-            <button
-              onClick={handleRestart}
-              className="px-4 py-2 bg-indigo-500 text-white rounded-lg shadow-md hover:bg-indigo-600 flex items-center transition-all"
-            >
-              <RefreshIcon />
-              <span className="ml-2">Restart</span>
+              <span className="ml-2">
+                {grafanaRunning ? "Stop Grafana" : "Start Grafana"}
+              </span>
             </button>
           </div>
           {/* Time Display */}

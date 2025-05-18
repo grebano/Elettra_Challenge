@@ -14,7 +14,8 @@ const DEFAULT_CONFIG = {
 // State management
 let postInterval = null;
 let currentData = {};
-let isInitialized = false;
+let isInitialized = false,
+  started = false;
 
 function initialize() {
   if (isInitialized) {
@@ -97,25 +98,42 @@ function initialize() {
   }
 }
 
+function start() {
+  if (started) {
+    sendEvent({
+      type: "info",
+      code: "grafana-already-started",
+      message: "GRAFANA - Already started",
+      time: new Date().toUTCString(),
+    });
+    return;
+  }
+
+  if (!isInitialized) {
+    initialize();
+  }
+
+  started = true;
+  sendEvent({
+    type: "info",
+    code: "grafana-started",
+    message: "GRAFANA - Started",
+    time: new Date().toUTCString(),
+  });
+}
+
 function stop() {
   if (postInterval) {
     clearInterval(postInterval);
     postInterval = null;
   }
-  isInitialized = false;
+  started = false;
   sendEvent({
     type: "info",
     code: "grafana-stopped",
     message: "GRAFANA - Stopped",
     time: new Date().toUTCString(),
   });
-}
-
-function restart() {
-  stop();
-  setTimeout(() => {
-    initialize();
-  }, 1000);
 }
 
 function formatData(data) {
@@ -190,23 +208,13 @@ async function postToGrafana() {
   }
 }
 
-function cleanup() {
-  if (postInterval) {
-    clearInterval(postInterval);
-    postInterval = null;
-  }
-  isInitialized = false;
-}
-
 module.exports = {
-  initializeGrafana: initialize,
+  startGrafana: start,
   stopGrafana: stop,
-  restartGrafana: restart,
   updateGrafana: (data) => {
     formatData(data);
-    if (isInitialized && settings.grafana.postStrategy.mode === "MESSAGE") {
+    if (started && settings.grafana.postStrategy.mode === "MESSAGE") {
       postToGrafana();
     }
   },
-  cleanupGrafana: cleanup,
 };

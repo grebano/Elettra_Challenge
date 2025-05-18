@@ -6,7 +6,6 @@ import {
   Popup,
   useMap,
   ZoomControl,
-  Polyline,
 } from "react-leaflet";
 import { divIcon } from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -27,7 +26,7 @@ const calculateDistance = (point1, point2) => {
   return R * c;
 };
 
-// Calculate total path distance from a list of position points
+// Calculate total path distance
 const calculateTotalDistance = (positions) => {
   if (!positions || positions.length < 2) return 0;
 
@@ -39,15 +38,15 @@ const calculateTotalDistance = (positions) => {
   return totalDistance;
 };
 
-// Premium marker with pulse effect and shadow
-const marker = (colorHex = "#3b82f6", size = 12) =>
+// marker icon
+const customMarker = (color = "#3b82f6", size = 12) =>
   divIcon({
     className: "",
     html: `
       <div style="
         width: ${size}px;
         height: ${size}px;
-        background-color: ${colorHex};
+        background-color: ${color};
         border-radius: 50%;
         border: 2px solid white;
       "></div>
@@ -56,35 +55,30 @@ const marker = (colorHex = "#3b82f6", size = 12) =>
     iconAnchor: [size / 2, size / 2],
   });
 
-// Enhanced pan to marker with smooth animation
-const PanToLastMarker = ({ lastMarker }) => {
+// Focus only on last marker when auto-pan is enabled
+const PanToLastMarker = ({ lastMarker, autoPanEnabled }) => {
   const map = useMap();
-  const prevMarkerRef = useRef(null);
 
   useEffect(() => {
-    if (
-      lastMarker?.position &&
-      JSON.stringify(prevMarkerRef.current) !== JSON.stringify(lastMarker)
-    ) {
-      map.flyTo(lastMarker.position, 14, {
+    if (autoPanEnabled && lastMarker?.position) {
+      map.flyTo(lastMarker.position, 17, {
         animate: true,
         duration: 1.5,
         easeLinearity: 0.5,
       });
-      prevMarkerRef.current = lastMarker;
     }
-  }, [lastMarker, map]);
+  }, [lastMarker, autoPanEnabled]);
 
   return null;
 };
 
-// Enhanced fit bounds with padding
-const FitBounds = ({ markers }) => {
+// Fit bounds only for route markers when reset is triggered
+const FitBoundsOnReset = ({ routeMarkers, resetTrigger }) => {
   const map = useMap();
 
   useEffect(() => {
-    if (markers && markers.length > 0) {
-      const bounds = markers.map((marker) => marker.position);
+    if (routeMarkers && routeMarkers.length > 0) {
+      const bounds = routeMarkers.map((marker) => marker.position);
       map.fitBounds(bounds, {
         padding: [50, 50],
         maxZoom: 15,
@@ -92,7 +86,7 @@ const FitBounds = ({ markers }) => {
         duration: 1,
       });
     }
-  }, [markers, map]);
+  }, [resetTrigger]);
 
   return null;
 };
@@ -118,6 +112,8 @@ const Map = ({ lastMarker, fixedMarkers = [] }) => {
   const [routeMarkers, setRouteMarkers] = useState([]);
   const [mapStyle, setMapStyle] = useState("light");
   const [totalDistance, setTotalDistance] = useState(0);
+  const [autoPanEnabled, setAutoPanEnabled] = useState(true);
+  const [resetTrigger, setResetTrigger] = useState(false);
   const lastMarkerRef = useRef(null);
   const mapRef = useRef(null);
 
@@ -170,42 +166,17 @@ const Map = ({ lastMarker, fixedMarkers = [] }) => {
   const getColorClass = (colorName) => {
     if (!colorName) return "blue"; // Default fallback
 
-    // Normalize input (remove #, lowercase, trim whitespace)
-    const normalizedColor = colorName
-      .toString()
-      .trim()
-      .replace(/^#/, "")
-      .toLowerCase();
+    return colorName.trim().toLowerCase();
+  };
 
-    // Map color names/hex codes to Tailwind base classes
-    const colorMap = {
-      // Named colors
-      red: "red",
-      green: "green",
-      blue: "blue",
-      yellow: "yellow",
-      purple: "purple",
-      orange: "orange",
-      pink: "pink",
-      teal: "teal",
-      gray: "gray",
-      black: "gray", // Maps to gray (no intensity)
-      white: "gray", // Maps to gray (no intensity)
+  // Toggle auto-pan functionality
+  const toggleAutoPan = () => {
+    setAutoPanEnabled(!autoPanEnabled);
+  };
 
-      // Hex codes (without #)
-      ff0000: "red",
-      "00ff00": "green",
-      "0000ff": "blue",
-      ffff00: "yellow",
-      ff00ff: "fuchsia",
-      ff9900: "orange",
-      ff19e4: "pink",
-      "19ffc2": "teal",
-      "000000": "gray", // black → gray
-      ffffff: "gray", // white → gray
-    };
-
-    return colorMap[normalizedColor] || "blue"; // Fallback to blue
+  // Reset view
+  const handleResetView = () => {
+    setResetTrigger(!resetTrigger);
   };
 
   // All markers displayed on the map
@@ -215,7 +186,7 @@ const Map = ({ lastMarker, fixedMarkers = [] }) => {
     <div className="flex flex-col space-y-4">
       {/* Map container and controls wrapper */}
       <div className="relative w-full">
-        {/* Map type selector - positioned above the map */}
+        {/* Map controls - positioned above the map */}
         <div className="absolute top-0 right-0 z-10 bg-white rounded-bl-lg shadow-lg overflow-hidden z-1001">
           <div className="flex">
             <button
@@ -251,6 +222,28 @@ const Map = ({ lastMarker, fixedMarkers = [] }) => {
           </div>
         </div>
 
+        {/* Left side controls */}
+        <div className="absolute top-0 left-0 z-10 bg-white rounded-br-lg shadow-lg overflow-hidden z-1001">
+          <div className="flex flex-col">
+            <button
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                autoPanEnabled
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-100"
+              }`}
+              onClick={toggleAutoPan}
+            >
+              {autoPanEnabled ? "Auto-Pan: On" : "Auto-Pan: Off"}
+            </button>
+            <button
+              className="px-4 py-2 text-sm font-medium transition-colors bg-green-600 text-white hover:bg-green-700"
+              onClick={handleResetView}
+            >
+              Reset View
+            </button>
+          </div>
+        </div>
+
         {/* Map container */}
         <div className="rounded-xl overflow-hidden shadow-lg">
           <div
@@ -275,7 +268,7 @@ const Map = ({ lastMarker, fixedMarkers = [] }) => {
                 <Marker
                   key={`marker-${index}`}
                   position={marker.position}
-                  icon={marker(
+                  icon={customMarker(
                     getColorClass(marker.color) || "blue",
                     marker.size || 12
                   )}
@@ -308,8 +301,14 @@ const Map = ({ lastMarker, fixedMarkers = [] }) => {
               ))}
 
               <ZoomControl position="bottomright" />
-              <FitBounds markers={allMarkersForDisplay} />
-              <PanToLastMarker lastMarker={lastMarker} />
+              <FitBoundsOnReset
+                routeMarkers={routeMarkers}
+                resetTrigger={resetTrigger}
+              />
+              <PanToLastMarker
+                lastMarker={lastMarker}
+                autoPanEnabled={autoPanEnabled}
+              />
               <CustomAttribution />
             </MapContainer>
 
