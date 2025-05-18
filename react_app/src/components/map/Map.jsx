@@ -40,16 +40,17 @@ const calculateTotalDistance = (positions) => {
 };
 
 // Premium marker with pulse effect and shadow
-const premiumMarker = (color, size = 12) =>
+const marker = (colorHex = "#3b82f6", size = 12) =>
   divIcon({
     className: "",
     html: `
-      <div class="relative flex items-center justify-center w-8 h-8">
-        <div class="absolute w-8 h-8 bg-${color}-200 opacity-70 rounded-full animate-ping"></div>
-        <div class="w-${size / 4} h-${
-      size / 4
-    } bg-${color}-500 rounded-full shadow-lg border-2 border-white z-10"></div>
-      </div>
+      <div style="
+        width: ${size}px;
+        height: ${size}px;
+        background-color: ${colorHex};
+        border-radius: 50%;
+        border: 2px solid white;
+      "></div>
     `,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
@@ -120,18 +121,6 @@ const Map = ({ lastMarker, fixedMarkers = [] }) => {
   const lastMarkerRef = useRef(null);
   const mapRef = useRef(null);
 
-  // Process the color to a safe value for Tailwind
-  const processColor = (color) => {
-    if (!color) return "blue";
-
-    // If it's a hex color starting with #, remove the #
-    if (typeof color === "string" && color.startsWith("#")) {
-      return color.substring(1).toLowerCase();
-    }
-
-    return color;
-  };
-
   // Prepare fixed markers format from JSON
   const preparedFixedMarkers = fixedMarkers;
 
@@ -179,7 +168,16 @@ const Map = ({ lastMarker, fixedMarkers = [] }) => {
   };
 
   const getColorClass = (colorName) => {
-    // Map color names and hex colors to Tailwind color classes
+    if (!colorName) return "blue"; // Default fallback
+
+    // Normalize input (remove #, lowercase, trim whitespace)
+    const normalizedColor = colorName
+      .toString()
+      .trim()
+      .replace(/^#/, "")
+      .toLowerCase();
+
+    // Map color names/hex codes to Tailwind base classes
     const colorMap = {
       // Named colors
       red: "red",
@@ -190,17 +188,24 @@ const Map = ({ lastMarker, fixedMarkers = [] }) => {
       orange: "orange",
       pink: "pink",
       teal: "teal",
-      indigo: "indigo",
       gray: "gray",
-      // Hex colors (without #)
+      black: "gray", // Maps to gray (no intensity)
+      white: "gray", // Maps to gray (no intensity)
+
+      // Hex codes (without #)
       ff0000: "red",
-      "000000": "gray",
-      "010101": "gray",
+      "00ff00": "green",
+      "0000ff": "blue",
+      ffff00: "yellow",
+      ff00ff: "fuchsia",
+      ff9900: "orange",
       ff19e4: "pink",
       "19ffc2": "teal",
+      "000000": "gray", // black → gray
+      ffffff: "gray", // white → gray
     };
 
-    return colorMap[colorName] || "blue";
+    return colorMap[normalizedColor] || "blue"; // Fallback to blue
   };
 
   // All markers displayed on the map
@@ -265,23 +270,12 @@ const Map = ({ lastMarker, fixedMarkers = [] }) => {
                 attribution={mapTiles[mapStyle].attribution}
               />
 
-              {/* Polyline to connect ONLY route markers, not fixed markers */}
-              {routeMarkers.length > 1 && (
-                <Polyline
-                  positions={routeMarkers.map((marker) => marker.position)}
-                  color="#3388ff"
-                  weight={3}
-                  opacity={0.7}
-                  dashArray="5, 10"
-                />
-              )}
-
               {/* Render all markers */}
               {allMarkersForDisplay.map((marker, index) => (
                 <Marker
                   key={`marker-${index}`}
                   position={marker.position}
-                  icon={premiumMarker(
+                  icon={marker(
                     getColorClass(marker.color) || "blue",
                     marker.size || 12
                   )}

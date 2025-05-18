@@ -5,8 +5,8 @@
       "topic":"TX000AA"
    },
    "grafana":{
-      "url":"http://154.62.108.192:3001/monitoringdata/",
-      "team":"7Cv7rgZkSjCA2r9eeNc9JcKFutZzTEhj",
+      "url":"http://82.29.181.129:3001/monitoringdata/",
+      "team":"kaDosUPZ2Vphjj2j92pdAXie3F4YSrML",
       "postStrategy":{
          "mode": "MESSAGE",
          "intervalMs": 500

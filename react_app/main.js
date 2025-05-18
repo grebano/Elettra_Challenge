@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const mqttCallback = require(path.join(
   __dirname,
@@ -11,6 +11,12 @@ const { eventCallback, sendEvent } = require(path.join(
   "backend",
   "events",
   "events"
+));
+const { initializeGrafana, restartGrafana, stopGrafana } = require(path.join(
+  __dirname,
+  "backend",
+  "grafana",
+  "grafana"
 ));
 
 module.exports = {
@@ -25,6 +31,39 @@ const windows = {};
 
 app.whenReady().then(() => {
   createWindow("live");
+
+  ipcMain.on("start-grafana", (event, data) => {
+    console.log("Starting Grafana...");
+    initializeGrafana();
+    sendEvent({
+      type: "info",
+      code: "grafana-started",
+      message: "GRAFANA - Started",
+      time: new Date().toUTCString(),
+    });
+  });
+
+  ipcMain.on("stop-grafana", (event, data) => {
+    console.log("Stopping Grafana...");
+    stopGrafana();
+    sendEvent({
+      type: "info",
+      code: "grafana-stopped",
+      message: "GRAFANA - Stopped",
+      time: new Date().toUTCString(),
+    });
+  });
+
+  ipcMain.on("restart-grafana", (event, data) => {
+    console.log("Restarting Grafana...");
+    restartGrafana();
+    sendEvent({
+      type: "info",
+      code: "grafana-restarted",
+      message: "GRAFANA - Restarted",
+      time: new Date().toUTCString(),
+    });
+  });
 });
 
 app.on("window-all-closed", () => {

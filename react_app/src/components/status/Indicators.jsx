@@ -5,6 +5,7 @@ const Indicators = ({
   dataStopped,
   dataError,
   mqttConnectionStatus,
+  grafanaRunning,
 }) => {
   return (
     <div className="flex flex-wrap gap-5 justify-center bg-white p-5 rounded-xl shadow-md border border-gray-100 w-full max-w-3xl backdrop-blur-sm bg-white/90">
@@ -43,6 +44,15 @@ const Indicators = ({
         defaultColor="bg-emerald-500"
         defaultTextColor="text-emerald-700"
         pulseEffect={!mqttConnectionStatus}
+      />
+      <StatusIndicator
+        active={!grafanaRunning}
+        label="Grafana"
+        activeColor="bg-rose-500"
+        textColor="text-rose-700"
+        defaultColor="bg-emerald-500"
+        defaultTextColor="text-emerald-700"
+        pulseEffect={!grafanaRunning}
       />
     </div>
   );

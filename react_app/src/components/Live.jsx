@@ -82,6 +82,38 @@ const RotateIcon = () => (
     <path d="M21 3v5h-5" />
   </svg>
 );
+const PlayPauseIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M5 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+  </svg>
+);
+const RefreshIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M3 2v6h6" />
+    <path d="M3 13a9 9 0 1 0 3-7.7L3 8" />
+  </svg>
+);
 
 function Live({
   temp,
@@ -101,6 +133,7 @@ function Live({
 }) {
   // Get time for the dashboard
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [grafanaRunning, setGrafanaRunning] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -117,6 +150,25 @@ function Live({
     });
   };
 
+  const handleStartStop = () => {
+    // Logic to start/stop Grafana backend
+    if (grafanaRunning) {
+      window.electronAPI.StopGrafana();
+    } else {
+      window.electronAPI.StartGrafana();
+    }
+    setGrafanaRunning(!grafanaRunning);
+  };
+
+  const handleRestart = () => {
+    // Logic to restart Grafana backend
+    setGrafanaRunning(false);
+    window.electronAPI.RestartGrafana();
+    setTimeout(() => {
+      setGrafanaRunning(true);
+    }, 1000);
+  };
+
   return (
     <div className="p-4 md:p-6 bg-gradient-to-br from-blue-50 via-indigo-50 to-white min-h-screen flex flex-col items-center">
       {/* Header with time and title */}
@@ -125,11 +177,35 @@ function Live({
           Elettra Dashboard
           <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"></div>
         </h1>
-        <div className="mt-4 sm:mt-0 bg-white py-2 px-4 rounded-lg shadow-md border border-gray-100">
-          <p className="text-gray-500 text-sm">System Time</p>
-          <p className="text-lg font-semibold text-gray-800">
-            {formatTime(currentTime)}
-          </p>
+        <div className="mt-4 sm:mt-0 flex items-center">
+          {/* Grafana Control Buttons */}
+          <div className="flex mr-4">
+            <button
+              onClick={handleStartStop}
+              className={`mr-2 px-4 py-2 rounded-lg shadow-md flex items-center transition-all ${
+                grafanaRunning
+                  ? "bg-red-500 hover:bg-red-600 text-white"
+                  : "bg-green-500 hover:bg-green-600 text-white"
+              }`}
+            >
+              <PlayPauseIcon />
+              <span className="ml-2">{grafanaRunning ? "Stop" : "Start"}</span>
+            </button>
+            <button
+              onClick={handleRestart}
+              className="px-4 py-2 bg-indigo-500 text-white rounded-lg shadow-md hover:bg-indigo-600 flex items-center transition-all"
+            >
+              <RefreshIcon />
+              <span className="ml-2">Restart</span>
+            </button>
+          </div>
+          {/* Time Display */}
+          <div className="bg-white py-2 px-4 rounded-lg shadow-md border border-gray-100">
+            <p className="text-gray-500 text-sm">System Time</p>
+            <p className="text-lg font-semibold text-gray-800">
+              {formatTime(currentTime)}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -251,6 +327,7 @@ function Live({
           dataStopped={dataStopped}
           dataError={dataError}
           mqttConnectionStatus={mqttConnectionStatus}
+          grafanaRunning={grafanaRunning}
         />
       </div>
     </div>

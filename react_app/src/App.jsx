@@ -113,10 +113,11 @@ function App({ windowName }) {
           ]);
         }
 
-        if (data.lat !== undefined && data.lon !== undefined) {
+        if (data.latitude !== undefined && data.longitude !== undefined) {
           const newMarker = {
-            position: [data.lat, data.lon],
+            position: [data.latitude, data.longitude],
             popupText: new Date().toUTCString(),
+            color: "green",
           };
           setLastMarker(newMarker);
         }
