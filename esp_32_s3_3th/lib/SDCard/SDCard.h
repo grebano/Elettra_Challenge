@@ -101,5 +101,4 @@ void deleteAllFiles(fs::FS &fs, const char *path);
  * @param maxBackups 
  */
 void rotateLogFile(fs::FS &fs, const char *path, size_t maxSize, int maxBackups);
-
 #endif // SDCARD_H

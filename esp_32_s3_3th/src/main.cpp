@@ -82,6 +82,48 @@ JsonDocument jsonDoc;
 void setup()
 {
     Serial.begin(115200);
+<<<<<<< HEAD
+=======
+
+      
+    #ifdef REASSIGN_PINS
+    SPI.begin(SCK, MISO, MOSI, CS);
+    if (!SD.begin(CS)) {
+    #else
+    if (!SD.begin()) {
+    #endif
+        Serial.println("Card Mount Failed");
+        return;
+    }
+    uint8_t cardType = SD.cardType();
+    
+    if (cardType == CARD_NONE) {
+        Serial.println("No SD card attached");
+        return;
+    }
+    
+    Serial.print("SD Card Type: ");
+    if (cardType == CARD_MMC) {
+        Serial.println("MMC");
+    } else if (cardType == CARD_SD) {
+        Serial.println("SDSC");
+    } else if (cardType == CARD_SDHC) {
+        Serial.println("SDHC");
+    } else {
+        Serial.println("UNKNOWN");
+    }
+    
+    uint64_t cardSize = SD.cardSize() / (1024 * 1024);
+    Serial.printf("SD Card Size: %lluMB\n", cardSize);
+    
+    listDir(SD, "/", 0);
+    createDir(SD, "/Logs");
+
+
+    initGPS();
+    initTemperatureSensors(sensors);
+}
+>>>>>>> elettra_v2
 
     // Initialize SD card --------------------------------------
     SPI.begin(SCK, MISO, MOSI, CS);
@@ -94,8 +136,26 @@ void setup()
     deleteAllFiles(SD, "/Logs");
     createDir(SD, "/Logs");
 
+<<<<<<< HEAD
     appendFile(SD, "/Logs/event.txt", "Device started\n");
     appendFile(SD, "/Logs/event.txt", "SD card mounted\n");
+=======
+    // Save data to SD card
+    char data[128];
+    snprintf(data, sizeof(data), "Latitude= %.6f Longitude= %.6f Temperature= %.2f C\n", gps.location.lat(), gps.location.lng(), temperatureC);
+
+    //log data in comprehensive file
+    appendFile(SD, "/Logs/data.txt", data);
+
+    // Then perform specific logs
+    if (gps.location.isUpdated()) {
+        appendFile(SD, "/Logs/latitude.txt", String(gps.location.lat()).c_str());
+        appendFile(SD, "/Logs/longitude.txt", String(gps.location.lng()).c_str());
+    }
+    if (temperatureC != DEVICE_DISCONNECTED_C) {
+        appendFile(SD, "/Logs/temperature.txt", String(temperatureC).c_str());
+    }
+>>>>>>> elettra_v2
 
     // Initialize GPS -------------------------------------------
     initGPS();

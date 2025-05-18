@@ -232,3 +232,4 @@ void rotateLogFile(fs::FS &fs, const char *path, size_t maxSize, int maxBackups)
     writeFile(fs, path, "");
   }
 }
+

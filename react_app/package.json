@@ -4,39 +4,64 @@
   "version": "0.0.0",
   "type": "commonjs",
   "main": "main.js",
+  "author": "Elettra Challenge Team",
+  "description": "Seaflow application for monitoring data",
   "scripts": {
     "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
     "build": "vite build",
-    "electron-build": "electron-builder"
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux"
   },
   "build": {
     "appId": "com.example.myapp",
-    "productName": "MyElectronApp",
+    "productName": "Seaflow",
     "files": [
       "build/**/*",
       "backend/**/*",
       "preload.js",
       "main.js"
     ],
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
     "win": {
       "target": "nsis",
-      "icon": "icon.ico"
+      "icon": "icon.ico",
+      "signAndEditExecutable": false
     },
     "mac": {
-      "target": "dmg",
-      "icon": "icon.icns"
+      "target": [
+        "zip"
+      ],
+      "icon": "icon.icns",
+      "category": "public.app-category.utilities",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
     },
-    "asar": false
+    "linux": {
+      "target": [
+        "zip",
+        "dir"
+      ],
+      "category": "Utility",
+      "icon": "icon.ico"
+    },
+    "asar": true
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.14",
     "chart.js": "^4.4.8",
     "chartjs-adapter-date-fns": "^3.0.0",
+    "chartjs-plugin-datalabels": "^2.2.0",
     "concurrently": "^9.1.2",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "leaflet": "^1.9.4",
     "mqtt": "^5.10.4",
+    "node-fetch": "^2.7.0",
     "react": "^19.0.0-rc.1",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^19.0.0-rc.1",
