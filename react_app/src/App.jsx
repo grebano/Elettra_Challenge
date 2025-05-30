@@ -10,28 +10,24 @@ function App({ windowName }) {
   console.log("Rendering App component"); // Log per debug
 
   // Temperature states
-  const [temp, setTemp] = useState(null);
-  const [tempSeries, setTempSeries] = useState([]);
+  const [temp1, setTemp1] = useState(null);
+  const [temp1Series, setTemp1Series] = useState([]);
 
-  // Battery voltage states
-  const [batteryVolt, setBatteryVolt] = useState(null);
-  const [batteryVoltSeries, setBatteryVoltSeries] = useState([]);
+  const [temp2, setTemp2] = useState(null);
+  const [temp2Series, setTemp2Series] = useState([]);
 
-  // Battery percentage states
-  const [batteryPercent, setBatteryPercent] = useState(null);
-  const [batteryPercentSeries, setBatteryPercentSeries] = useState([]);
+  const [temp3, setTemp3] = useState(null);
+  const [temp3Series, setTemp3Series] = useState([]);
 
-  // Inverter temperature states
-  const [inverterTemp, setInverterTemp] = useState(null);
-  const [inverterTempSeries, setInverterTempSeries] = useState([]);
+  const [temp4, setTemp4] = useState(null);
+  const [temp4Series, setTemp4Series] = useState([]);
 
-  //Energy torque states
-  const [energyTorque, setEnergyTorque] = useState(null);
-  const [energyTorqueSeries, setEnergyTorqueSeries] = useState([]);
+  const [temp5, setTemp5] = useState(null);
+  const [temp5Series, setTemp5Series] = useState([]);
 
-  // Motor current states
-  const [motorCurrent, setMotorCurrent] = useState(null);
-  const [motorCurrentSeries, setMotorCurrentSeries] = useState([]);
+  // Speed states
+  const [speed, setSpeed] = useState(null);
+  const [speedSeries, setSpeedSeries] = useState([]);
 
   // Indicator states
   const [dataReceived, setDataReceived] = useState(false);
@@ -68,48 +64,52 @@ function App({ windowName }) {
         setTimeout(() => setDataReceived(false), 250);
 
         // Update the temperature state
-        if (data.temperature !== undefined) {
-          setTemp(data.temperature);
-          setTempSeries((prev) => [
+        if (data.temperature1 !== undefined) {
+          setTemp1(data.temperature1);
+          setTemp1Series((prev) => [
             ...prev,
-            { x: new Date(), y: data.temperature },
+            { x: new Date(), y: data.temperature1 },
           ]);
         }
 
-        // Update the new metric states
-        if (data.battery_voltage !== undefined) {
-          setBatteryVolt(data.battery_voltage);
-          setBatteryVoltSeries((prev) => [
+        if (data.temperature2 !== undefined) {
+          setTemp2(data.temperature2);
+          setTemp2Series((prev) => [
             ...prev,
-            { x: new Date(), y: data.battery_voltage },
+            { x: new Date(), y: data.temperature2 },
           ]);
         }
-        if (data.battery_percentage !== undefined) {
-          setBatteryPercent(data.battery_percentage);
-          setBatteryPercentSeries((prev) => [
+
+        if (data.temperature3 !== undefined) {
+          setTemp3(data.temperature3);
+          setTemp3Series((prev) => [
             ...prev,
-            { x: new Date(), y: data.battery_percentage },
+            { x: new Date(), y: data.temperature3 },
           ]);
         }
-        if (data.inverter_temperature !== undefined) {
-          setInverterTemp(data.inverter_temperature);
-          setInverterTempSeries((prev) => [
+
+        if (data.temperature4 !== undefined) {
+          setTemp4(data.temperature4);
+          setTemp4Series((prev) => [
             ...prev,
-            { x: new Date(), y: data.inverter_temperature },
+            { x: new Date(), y: data.temperature4 },
           ]);
         }
-        if (data.energy_torque !== undefined) {
-          setEnergyTorque(data.energy_torque);
-          setEnergyTorqueSeries((prev) => [
+
+        if (data.temperature5 !== undefined) {
+          setTemp5(data.temperature5);
+          setTemp5Series((prev) => [
             ...prev,
-            { x: new Date(), y: data.energy_torque },
+            { x: new Date(), y: data.temperature5 },
           ]);
         }
-        if (data.motor_current !== undefined) {
-          setMotorCurrent(data.motor_current);
-          setMotorCurrentSeries((prev) => [
+
+        // Update speed state
+        if (data.speed !== undefined) {
+          setSpeed(parseFloat((data.speed / 1.852).toFixed(2)));
+          setSpeedSeries((prev) => [
             ...prev,
-            { x: new Date(), y: data.motor_current },
+            { x: new Date(), y: parseFloat((data.speed / 1.852).toFixed(2)) },
           ]);
         }
 
@@ -172,12 +172,12 @@ function App({ windowName }) {
     case "#\\live":
       return (
         <Live
-          temp={temp}
-          batteryVolt={batteryVolt}
-          batteryPercent={batteryPercent}
-          inverterTemp={inverterTemp}
-          energyTorque={energyTorque}
-          motorCurrent={motorCurrent}
+          temp1={temp1}
+          temp2={temp2}
+          temp3={temp3}
+          temp4={temp4}
+          temp5={temp5}
+          speed={speed}
           dataReceived={dataReceived}
           dataStopped={dataStopped}
           dataError={dataError}
@@ -188,12 +188,12 @@ function App({ windowName }) {
     case "#\\charts":
       return (
         <Charts
-          tempSeries={tempSeries}
-          batteryVoltSeries={batteryVoltSeries}
-          batteryPercentSeries={batteryPercentSeries}
-          inverterTempSeries={inverterTempSeries}
-          energyTorqueSeries={energyTorqueSeries}
-          motorCurrentSeries={motorCurrentSeries}
+          temp1Series={temp1Series}
+          temp2Series={temp2Series}
+          temp3Series={temp3Series}
+          temp4Series={temp4Series}
+          temp5Series={temp5Series}
+          speedSeries={speedSeries}
           dataReceived={dataReceived}
           dataStopped={dataStopped}
           dataError={dataError}
@@ -209,7 +209,12 @@ function App({ windowName }) {
     default:
       return (
         <Live
-          temp={temp}
+          temp1={temp1}
+          temp2={temp2}
+          temp3={temp3}
+          temp4={temp4}
+          temp5={temp5}
+          speed={speed}
           dataReceived={dataReceived}
           dataStopped={dataStopped}
           dataError={dataError}

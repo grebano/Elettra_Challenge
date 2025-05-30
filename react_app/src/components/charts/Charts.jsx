@@ -4,40 +4,31 @@ import { Line } from "react-chartjs-2";
 import { Chart as ChartJS, Legend } from "chart.js/auto";
 import "chartjs-adapter-date-fns";
 
-const Charts = ({ 
-  data, 
-  colors, 
-  unit, 
-  showGrid = true, 
+const Charts = ({
+  data,
+  colors,
+  unit,
+  showGrid = true,
   animated = true,
-  maxPoints: initialMaxPoints = 20 // Rinominato per chiarezza
+  maxPoints: initialMaxPoints = 20, // Rinominato per chiarezza
 }) => {
   const chartRef = useRef(null);
   const [isHovering, setIsHovering] = useState(false);
-  
+
   // Definiamo la mappatura tra ciò che l'utente vede e ciò che viene effettivamente utilizzato
   const pointsMapping = {
-    5: 10,      // Utente vede 5, internamente usiamo 5 punti
-    10: 20,    // Utente vede 10, internamente usiamo 10 punti
-    15: 30,    // Utente vede 15, internamente usiamo 15 punti
-    20: 40,    // Utente vede 20, internamente usiamo 20 punti
-    25: 50     // Utente vede 25, internamente usiamo 25 punti
+    5: 5, // Utente vede 5, internamente usiamo 5 punti
+    10: 10, // Utente vede 10, internamente usiamo 10 punti
+    15: 15, // Utente vede 15, internamente usiamo 15 punti
+    20: 20, // Utente vede 20, internamente usiamo 20 punti
+    25: 25, // Utente vede 25, internamente usiamo 25 punti
   };
-  
-  // Invertiamo la mappatura per trovare il valore display iniziale
-  const getDisplayValue = (internalValue) => {
-    for (const [display, internal] of Object.entries(pointsMapping)) {
-      if (internal === internalValue) return Number(display);
-    }
-    return 10; // Valore predefinito se non trovato
-  };
-  
+
   // Stato per quello che l'utente vede
-  const [displayPoints, setDisplayPoints] = useState(getDisplayValue(initialMaxPoints));
-  
+  const [displayPoints, setDisplayPoints] = useState(initialMaxPoints);
   // Calcoliamo il maxPoints effettivo da usare internamente
-  const actualMaxPoints = pointsMapping[displayPoints] || 25;
-  
+  const actualMaxPoints = displayPoints;
+
   // Utilizziamo il valore mappato per limitare i dati
   const limitedData = useMemo(() => {
     return data.slice(Math.max(0, data.length - actualMaxPoints));
@@ -51,19 +42,21 @@ const Charts = ({
     if (chartRef.current && chartRef.current.data && data.length > 0) {
       // Force clear and reset with exactly maxPoints
       const chart = chartRef.current;
-      
+
       // Clear existing data
       chart.data.labels = [];
       chart.data.datasets[0].data = [];
-      
+
       // Add the most recent actualMaxPoints points
-      const recentPoints = data.slice(Math.max(0, data.length - actualMaxPoints));
-      
-      recentPoints.forEach(point => {
+      const recentPoints = data.slice(
+        Math.max(0, data.length - actualMaxPoints)
+      );
+
+      recentPoints.forEach((point) => {
         chart.data.labels.push(point.x);
         chart.data.datasets[0].data.push(point.y);
       });
-      
+
       chart.update();
     }
   }, [data, actualMaxPoints]);
@@ -132,7 +125,7 @@ const Charts = ({
           },
           maxRotation: 0,
           autoSkip: true,
-          maxTicksLimit: Math.max(5, actualMaxPoints / 2) // Limitiamo il numero di etichette mostrate
+          maxTicksLimit: Math.max(5, actualMaxPoints / 2), // Limitiamo il numero di etichette mostrate
         },
         title: {
           display: false,
@@ -192,7 +185,6 @@ const Charts = ({
   return (
     <div className="w-full transition-all duration-300">
       <div className="flex justify-between mb-2">
-
         <div className="flex items-center gap-2">
           <label htmlFor="pointsSelector" className="text-xs text-gray-600">
             Number of points:
@@ -203,7 +195,7 @@ const Charts = ({
             onChange={(e) => setDisplayPoints(Number(e.target.value))}
             className="text-xs border border-gray-300 rounded px-2 py-1 bg-white"
           >
-            {pointOptions.map(option => (
+            {pointOptions.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>

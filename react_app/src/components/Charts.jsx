@@ -3,12 +3,12 @@ import Charts from "./charts/Charts";
 import Indicators from "./status/Indicators";
 
 function ChartContainer({
-  tempSeries,
-  batteryVoltSeries,
-  batteryPercentSeries,
-  inverterTempSeries,
-  energyTorqueSeries,
-  motorCurrentSeries,
+  temp1Series,
+  temp2Series,
+  temp3Series,
+  temp4Series,
+  temp5Series,
+  speedSeries,
   dataReceived,
   dataStopped,
   dataError,
@@ -19,58 +19,58 @@ function ChartContainer({
   // Define chart configurations for each series
   const chartConfigs = [
     {
-      id: "temp",
-      label: "Boat Speed",
-      data: tempSeries || [],
-      borderColor: "rgba(239, 68, 68, 1)", // Red
-      backgroundColor: "rgba(239, 68, 68, 0.1)",
-      unit: "kn",
-      category: "performance",
-    },
-    {
-      id: "batteryVolt",
-      label: "Battery Voltage",
-      data: batteryVoltSeries || [],
-      borderColor: "rgba(16, 185, 129, 1)", // Green
-      backgroundColor: "rgba(16, 185, 129, 0.1)",
-      unit: "V",
-      category: "power",
-    },
-    {
-      id: "batteryPercent",
-      label: "Battery Percentage",
-      data: batteryPercentSeries || [],
-      borderColor: "rgba(14, 165, 233, 1)", // Sky Blue
-      backgroundColor: "rgba(14, 165, 233, 0.1)",
-      unit: "%",
-      category: "power",
-    },
-    {
-      id: "inverterTemp",
-      label: "Inverter Temperature",
-      data: inverterTempSeries || [],
-      borderColor: "rgba(168, 85, 247, 1)", // Purple
-      backgroundColor: "rgba(168, 85, 247, 0.1)",
+      id: "temp1",
+      label: "Temperature 1",
+      data: temp1Series,
       unit: "°C",
       category: "temperature",
+      borderColor: "#FF6384",
+      backgroundColor: "rgba(255, 99, 132, 0.2)",
     },
     {
-      id: "energyTorque",
-      label: "Energy Torque",
-      data: energyTorqueSeries || [],
-      borderColor: "rgba(245, 158, 11, 1)", // Amber
-      backgroundColor: "rgba(245, 158, 11, 0.1)",
-      unit: "Nm",
+      id: "temp2",
+      label: "Temperature 2",
+      data: temp2Series,
+      unit: "°C",
+      category: "temperature",
+      borderColor: "#36A2EB",
+      backgroundColor: "rgba(54, 162, 235, 0.2)",
+    },
+    {
+      id: "temp3",
+      label: "Temperature 3",
+      data: temp3Series,
+      unit: "°C",
+      category: "temperature",
+      borderColor: "#FFCE56",
+      backgroundColor: "rgba(255, 206, 86, 0.2)",
+    },
+    {
+      id: "temp4",
+      label: "Temperature 4",
+      data: temp4Series,
+      unit: "°C",
+      category: "temperature",
+      borderColor: "#4BC0C0",
+      backgroundColor: "rgba(75, 192, 192, 0.2)",
+    },
+    {
+      id: "temp5",
+      label: "Temperature 5",
+      data: temp5Series,
+      unit: "°C",
+      category: "temperature",
+      borderColor: "#9966FF",
+      backgroundColor: "rgba(153, 102, 255, 0.2)",
+    },
+    {
+      id: "speed",
+      label: "Speed",
+      data: speedSeries,
+      unit: "kn",
       category: "performance",
-    },
-    {
-      id: "motorCurrent",
-      label: "Motor Current",
-      data: motorCurrentSeries || [],
-      borderColor: "rgba(75, 85, 99, 1)", // Gray
-      backgroundColor: "rgba(75, 85, 99, 0.1)",
-      unit: "A",
-      category: "power",
+      borderColor: "#FF9F40",
+      backgroundColor: "rgba(255, 159, 64, 0.2)",
     },
   ];
 

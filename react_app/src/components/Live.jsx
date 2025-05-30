@@ -116,16 +116,12 @@ const RefreshIcon = () => (
 );
 
 function Live({
-  temp,
-  batteryVolt,
-  batteryPercent,
-  inverterTemp,
-  energyTorque,
-  motorCurrent,
-  motorRPM,
-  bmsSystemTemp,
-  bmsBatteryTemp1,
-  bmsBatteryTemp2,
+  temp1,
+  temp2,
+  temp3,
+  temp4,
+  temp5,
+  speed,
   dataReceived,
   dataStopped,
   dataError,
@@ -212,39 +208,8 @@ function Live({
                 Boat Speed
               </p>
               <div className="flex items-baseline">
-                <span className="text-4xl font-bold">{temp || "--"}</span>
+                <span className="text-4xl font-bold">{speed || "--"}</span>
                 <span className="text-xl ml-1">kn</span>
-              </div>
-            </div>
-
-            {/* Battery Card */}
-            <div className="bg-gradient-to-br from-green-500 to-emerald-700 p-6 rounded-2xl shadow-lg text-white relative overflow-hidden">
-              <div className="absolute right-4 top-4 opacity-20">
-                <BatteryIcon />
-              </div>
-              <p className="text-green-100 text-sm font-medium mb-1">
-                Power Status
-              </p>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-green-100 text-xs">LEVEL</div>
-                  <div className="text-3xl font-bold">
-                    {batteryPercent || "--"}%
-                  </div>
-                </div>
-                <div>
-                  <div className="text-green-100 text-xs">VOLTAGE</div>
-                  <div className="text-3xl font-bold">
-                    {batteryVolt || "--"}
-                    <span className="text-xl ml-0.5">V</span>
-                  </div>
-                </div>
-              </div>
-              <div className="w-full bg-white/20 h-2 mt-4 rounded-full overflow-hidden">
-                <div
-                  className="bg-white h-full rounded-full"
-                  style={{ width: `${batteryPercent || 0}%` }}
-                ></div>
               </div>
             </div>
           </div>
@@ -256,52 +221,34 @@ function Live({
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           <DashUnit
-            datum={inverterTemp}
+            datum={temp1}
             unit="°C"
-            label="Inverter Temperature"
+            label="Temperature 1"
             icon={<TemperatureIcon />}
           />
           <DashUnit
-            datum={energyTorque || motorCurrent}
-            unit="Nm"
-            label="Energy Torque"
-            icon={<ElectricIcon />}
-          />
-          <DashUnit
-            datum={motorCurrent}
-            unit="A"
-            label="Motor Current"
-            icon={<ElectricIcon />}
-          />
-          <DashUnit
-            datum={motorRPM || motorCurrent}
-            unit=""
-            label="Motor RPM"
-            icon={<RotateIcon />}
-          />
-          <DashUnit
-            datum={bmsSystemTemp || motorCurrent}
+            datum={temp2}
             unit="°C"
-            label="BMS System Temp"
+            label="Temp 2"
             icon={<TemperatureIcon />}
           />
           <DashUnit
-            datum={bmsBatteryTemp1 || motorCurrent}
+            datum={temp3}
             unit="°C"
-            label="BMS Battery Temp 1"
+            label="Temp 3"
             icon={<TemperatureIcon />}
           />
           <DashUnit
-            datum={bmsBatteryTemp2 || motorCurrent}
+            datum={temp4}
             unit="°C"
-            label="BMS Battery Temp 2"
+            label="Temp 4"
             icon={<TemperatureIcon />}
           />
           <DashUnit
-            datum={null}
-            unit="W"
-            label="Power Consumption"
-            icon={<ElectricIcon />}
+            datum={temp5}
+            unit="°C"
+            label="Temp 5"
+            icon={<TemperatureIcon />}
           />
         </div>
       </div>
