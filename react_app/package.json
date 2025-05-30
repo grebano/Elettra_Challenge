@@ -1,5 +1,5 @@
 {
-  "name": "my-electron-app",
+  "name": "Seaflow",
   "private": true,
   "version": "0.0.0",
   "type": "commonjs",
@@ -17,6 +17,7 @@
   "build": {
     "appId": "com.example.myapp",
     "productName": "Seaflow",
+    "artifactName": "${productName}-${os}.${ext}",
     "files": [
       "build/**/*",
       "backend/**/*",
@@ -43,8 +44,7 @@
     },
     "linux": {
       "target": [
-        "zip",
-        "dir"
+      "zip"
       ],
       "category": "Utility",
       "icon": "icon.ico"

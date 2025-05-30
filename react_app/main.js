@@ -123,7 +123,7 @@ function createWindow(windowName = "live") {
       const indexPath = path.join(__dirname, "./build/index.html");
       console.log("Loading from path:", indexPath);
       windows[windowName].loadURL(`file://${indexPath}#/${windowName}`);
-      windows[windowName].webContents.openDevTools();
+      //windows[windowName].webContents.openDevTools();
     }
 
     // Log when page is fully loaded
