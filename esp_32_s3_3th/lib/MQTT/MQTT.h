@@ -21,8 +21,8 @@ private:
 
 /**
  * @brief function to generate random data for testing purposes
- * 
- * @return JsonDocument 
+ *
+ * @return JsonDocument
  */
 void generateRandomData(JsonDocument &jsonDoc);
 

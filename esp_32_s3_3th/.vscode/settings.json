@@ -4,5 +4,6 @@
     "MOSI",
     "mosquitto",
     "mqtt"
-  ]
+  ],
+  "idf.portWin": "COM6"
 }

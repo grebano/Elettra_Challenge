@@ -82,48 +82,6 @@ JsonDocument jsonDoc;
 void setup()
 {
     Serial.begin(115200);
-<<<<<<< HEAD
-=======
-
-      
-    #ifdef REASSIGN_PINS
-    SPI.begin(SCK, MISO, MOSI, CS);
-    if (!SD.begin(CS)) {
-    #else
-    if (!SD.begin()) {
-    #endif
-        Serial.println("Card Mount Failed");
-        return;
-    }
-    uint8_t cardType = SD.cardType();
-    
-    if (cardType == CARD_NONE) {
-        Serial.println("No SD card attached");
-        return;
-    }
-    
-    Serial.print("SD Card Type: ");
-    if (cardType == CARD_MMC) {
-        Serial.println("MMC");
-    } else if (cardType == CARD_SD) {
-        Serial.println("SDSC");
-    } else if (cardType == CARD_SDHC) {
-        Serial.println("SDHC");
-    } else {
-        Serial.println("UNKNOWN");
-    }
-    
-    uint64_t cardSize = SD.cardSize() / (1024 * 1024);
-    Serial.printf("SD Card Size: %lluMB\n", cardSize);
-    
-    listDir(SD, "/", 0);
-    createDir(SD, "/Logs");
-
-
-    initGPS();
-    initTemperatureSensors(sensors);
-}
->>>>>>> elettra_v2
 
     // Initialize SD card --------------------------------------
     SPI.begin(SCK, MISO, MOSI, CS);
@@ -136,26 +94,8 @@ void setup()
     deleteAllFiles(SD, "/Logs");
     createDir(SD, "/Logs");
 
-<<<<<<< HEAD
     appendFile(SD, "/Logs/event.txt", "Device started\n");
     appendFile(SD, "/Logs/event.txt", "SD card mounted\n");
-=======
-    // Save data to SD card
-    char data[128];
-    snprintf(data, sizeof(data), "Latitude= %.6f Longitude= %.6f Temperature= %.2f C\n", gps.location.lat(), gps.location.lng(), temperatureC);
-
-    //log data in comprehensive file
-    appendFile(SD, "/Logs/data.txt", data);
-
-    // Then perform specific logs
-    if (gps.location.isUpdated()) {
-        appendFile(SD, "/Logs/latitude.txt", String(gps.location.lat()).c_str());
-        appendFile(SD, "/Logs/longitude.txt", String(gps.location.lng()).c_str());
-    }
-    if (temperatureC != DEVICE_DISCONNECTED_C) {
-        appendFile(SD, "/Logs/temperature.txt", String(temperatureC).c_str());
-    }
->>>>>>> elettra_v2
 
     // Initialize GPS -------------------------------------------
     initGPS();
@@ -195,14 +135,16 @@ void loop()
 
     // Simulate GPS data
     String gpsData = ExampleGPSData;
-    SensorsData.setTemperature(0, 25.0);
-    SensorsData.setTemperature(1, 26.0);
+    sensorsData.setTemperature(0, 25.0);
+    sensorsData.setTemperature(1, 26.0);
 
 #else
 
     // Read GPS data
     String gpsData;
     readGPSData(gpsData);
+    readGPSData(gps, sensorsData);
+
     // Read temperature data
     readTemperature(sensors, sensorsData);
 
@@ -214,7 +156,7 @@ void loop()
         appendFile(SD, "/Logs/gps.txt", gpsData.c_str());
     }
 
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 5; i++)
     {
         if (sensorsData.getTemperature(i) != DEVICE_DISCONNECTED_C)
         {
@@ -223,6 +165,13 @@ void loop()
             appendFile(SD, path.c_str(), temperature.c_str());
             rotateLogFile(SD, path.c_str(), 1024 * 1024, 5);
         }
+        else
+        {
+            sensorsData.setTemperature(i, 26.0);
+            String temperature = "Device disconnected\n";
+            String path = "/Logs/temperature" + String(i) + ".txt";
+            appendFile(SD, path.c_str(), temperature.c_str());
+        }
     }
 
 #ifdef ACTIVATE_COMMUNICATION
@@ -230,13 +179,14 @@ void loop()
     mqttHandler.reconnect("ESP32-S3-Ethernet");
     mqttHandler.loop();
 
-    // Create JSON data
-    jsonDoc.clear();
-    generateRandomData(jsonDoc);
+    // Convert sensor data to JSON
+    jsonDoc["device"] = "ESP32-S3-Ethernet";
+    jsonDoc["heap"] = ESP.getFreeHeap();
+    sensorsData.toJson(jsonDoc);
 
     // Publish JSON data to MQTT topic
     mqttHandler.publish(mqtt_topic, jsonDoc);
 #endif // ACTIVATE_COMMUNICATION
 
-    delay(20);
+    delay(100);
 }

@@ -26,29 +26,27 @@
 // -.._(                  `-----'                                       `-
 // -----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----
 
-
-void initGPS() {
+void initGPS()
+{
     // Begin serial communication
     gpsSerial.begin(GPS_BAUD_RATE);
-    
+
     // Optional: Add a small delay to ensure GPS module is ready
     delay(100);
 }
 
-void readGPSData(TinyGPSPlus &gps) {
-    // Read data from GPS serial port
-    while (gpsSerial.available() > 0) {
-        char c = gpsSerial.read();
-        gps.encode(c);
-    }
-}
+void readGPSData(TinyGPSPlus &gps, SensorsData &sensorsData)
+{
+    unsigned long startTime = millis();
 
-void readGPSData(TinyGPSPlus &gps, SensorsData &sensorsData) {
-    // Read data from GPS serial port
-    while (gpsSerial.available() > 0) {
-        char c = gpsSerial.read();
-        gps.encode(c);
-    }
+    do
+    {
+        while (gpsSerial.available() > 0)
+        {
+
+            gps.encode(gpsSerial.read());
+        }
+    } while (millis() - startTime < 1000); // Wait for up to 1 second for GPS data
 
     sensorsData.setGPS(
         gps.location.lat(),
@@ -63,18 +61,20 @@ void readGPSData(TinyGPSPlus &gps, SensorsData &sensorsData) {
         gps.time.hour(),
         gps.time.minute(),
         gps.time.second(),
-        gps.location.isValid()
-    );
+        gps.location.isValid());
 }
 
-void readGPSData(String &gps) {
+void readGPSData(String &gps)
+{
     // Read data from GPS serial port
     int count = 0;
-    while (gpsSerial.available() > 0) {
+    while (gpsSerial.available() > 0)
+    {
         char c = gpsSerial.read();
         gps += c;
         count++;
-        if (count >= 64) {
+        if (count >= 64)
+        {
             break;
         }
     }
