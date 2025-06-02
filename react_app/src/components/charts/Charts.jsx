@@ -1,5 +1,5 @@
 // Charts.jsx
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, { useRef, useState, useMemo } from "react";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS, Legend } from "chart.js/auto";
 import "chartjs-adapter-date-fns";
@@ -10,70 +10,26 @@ const Charts = ({
   unit,
   showGrid = true,
   animated = true,
-  maxPoints: initialMaxPoints = 20, // Rinominato per chiarezza
+  maxPoints: initialMaxPoints = 20,
 }) => {
   const chartRef = useRef(null);
   const [isHovering, setIsHovering] = useState(false);
 
-  // Definiamo la mappatura tra ciò che l'utente vede e ciò che viene effettivamente utilizzato
-  const pointsMapping = {
-    5: 5, // Utente vede 5, internamente usiamo 5 punti
-    10: 10, // Utente vede 10, internamente usiamo 10 punti
-    15: 15, // Utente vede 15, internamente usiamo 15 punti
-    20: 20, // Utente vede 20, internamente usiamo 20 punti
-    25: 25, // Utente vede 25, internamente usiamo 25 punti
-  };
+  // Available options for the number of points to display
+  const pointOptions = [5, 10, 15, 20, 25];
 
-  // Stato per quello che l'utente vede
+  // State for the number of points to display
   const [displayPoints, setDisplayPoints] = useState(initialMaxPoints);
-  // Calcoliamo il maxPoints effettivo da usare internamente
-  const actualMaxPoints = displayPoints;
 
-  // Utilizziamo il valore mappato per limitare i dati
+  // Limit the data to the selected number of points
   const limitedData = useMemo(() => {
-    return data.slice(Math.max(0, data.length - actualMaxPoints));
-  }, [data, actualMaxPoints]);
-
-  // Opzioni disponibili per il numero di punti (ciò che l'utente vede)
-  const pointOptions = Object.keys(pointsMapping).map(Number);
-
-  // Aggiorniamo il grafico quando cambia maxPoints
-  useEffect(() => {
-    if (chartRef.current && chartRef.current.data && data.length > 0) {
-      // Force clear and reset with exactly maxPoints
-      const chart = chartRef.current;
-
-      // Clear existing data
-      chart.data.labels = [];
-      chart.data.datasets[0].data = [];
-
-      // Add the most recent actualMaxPoints points
-      const recentPoints = data.slice(
-        Math.max(0, data.length - actualMaxPoints)
-      );
-
-      recentPoints.forEach((point) => {
-        chart.data.labels.push(point.x);
-        chart.data.datasets[0].data.push(point.y);
-      });
-
-      chart.update();
-    }
-  }, [data, actualMaxPoints]);
-
-  useEffect(() => {
-    const chart = chartRef.current;
-    return () => {
-      if (chart) {
-        chart.destroy();
-      }
-    };
-  }, []);
+    return data.slice(Math.max(0, data.length - displayPoints));
+  }, [data, displayPoints]);
 
   // Calculate min and max for better Y axis scaling
   const dataValues = limitedData.map((item) => item.y);
-  const minValue = dataValues.length > 0 ? Math.min(...dataValues) * 0.9 : 0; // Add 10% padding
-  const maxValue = dataValues.length > 0 ? Math.max(...dataValues) * 1.1 : 100; // Add 10% padding
+  const minValue = dataValues.length > 0 ? Math.min(...dataValues) * 0.9 : 0; // 10% padding
+  const maxValue = dataValues.length > 0 ? Math.max(...dataValues) * 1.1 : 100; // 10% padding
 
   const chartData = {
     labels: limitedData.map((item) => item.x),
@@ -81,12 +37,12 @@ const Charts = ({
       {
         label: "Data",
         data: limitedData.map((item) => item.y),
-        borderColor: colors?.borderColor || "rgba(59, 130, 246, 1)", // Blue
+        borderColor: colors?.borderColor || "rgba(59, 130, 246, 1)",
         backgroundColor: colors?.backgroundColor || "rgba(59, 130, 246, 0.1)",
         borderWidth: isHovering ? 3 : 2,
-        pointRadius: 3, // Aumentato per assicurarsi che ogni punto sia visibile
+        pointRadius: 3,
         pointHoverRadius: 6,
-        tension: 0.2, // Ridotto per rendere la curva meno smussata
+        tension: 0.2,
         fill: true,
         pointBackgroundColor: colors?.borderColor || "rgba(59, 130, 246, 1)",
         showLine: true,
@@ -125,7 +81,7 @@ const Charts = ({
           },
           maxRotation: 0,
           autoSkip: true,
-          maxTicksLimit: Math.max(5, actualMaxPoints / 2), // Limitiamo il numero di etichette mostrate
+          maxTicksLimit: Math.max(5, displayPoints / 2),
         },
         title: {
           display: false,
