@@ -129,6 +129,7 @@ function App({ windowName }) {
 
         if (data.latitude !== undefined && data.longitude !== undefined) {
           if (
+            data.location_is_valid === true &&
             haversineDistance(
               lastMarker?.position[0] || 0,
               lastMarker?.position[1] || 0,
