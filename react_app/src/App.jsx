@@ -50,6 +50,20 @@ function App({ windowName }) {
   );
   const [lastMarker, setLastMarker] = useState(null);
 
+  const haversineDistance = (prevLat, prevLon, currLat, currLon) => {
+    const R = 6371; // Average radius of Earth in km
+    const dLat = (currLat - prevLat) * (Math.PI / 180);
+    const dLon = (currLon - prevLon) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(prevLat * (Math.PI / 180)) *
+        Math.cos(currLat * (Math.PI / 180)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c * 1000; // Distance in meters
+  };
+
   // Get data from the main process
   useEffect(() => {
     try {
@@ -114,12 +128,21 @@ function App({ windowName }) {
         }
 
         if (data.latitude !== undefined && data.longitude !== undefined) {
-          const newMarker = {
-            position: [data.latitude, data.longitude],
-            popupText: new Date().toUTCString(),
-            color: "green",
-          };
-          setLastMarker(newMarker);
+          if (
+            haversineDistance(
+              lastMarker?.position[0] || 0,
+              lastMarker?.position[1] || 0,
+              data.latitude,
+              data.longitude
+            ) > 10 // Only update if moved more than 10 meters
+          ) {
+            const newMarker = {
+              position: [data.latitude, data.longitude],
+              popupText: new Date().toUTCString(),
+              color: "green",
+            };
+            setLastMarker(newMarker);
+          }
         }
       });
 
